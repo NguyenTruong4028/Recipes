@@ -26,6 +26,7 @@
         style="@style/LabelStyle"
         android:text="Full Name"/>
     <EditText
+        android:id="@+id/edtfullname"
         style="@style/InputStyle"
         android:hint="John Doe"
         android:inputType="textPersonName"/>
@@ -34,27 +35,12 @@
         style="@style/LabelStyle"
         android:text="Email"/>
     <EditText
+        android:id="@+id/edtEmail"
         style="@style/InputStyle"
         android:hint="example@example.com"
         android:inputType="textEmailAddress"/>
 
     <TextView
-        style="@style/LabelStyle"
-        android:text="Mobile Number"/>
-    <EditText
-        style="@style/InputStyle"
-        android:hint="+ 123 456 789"
-        android:inputType="phone"/>
-
-    <TextView
-        style="@style/LabelStyle"
-        android:text="Date Of Birth"/>
-    <EditText
-        android:id="@+id/edtDob"
-        style="@style/InputStyle"
-        android:hint="DD / MM / YYYY"
-        android:inputType="date"
-        android:focusable="false"/> <TextView
     style="@style/LabelStyle"
     android:text="Password"/>
     <com.google.android.material.textfield.TextInputLayout
@@ -67,6 +53,7 @@
         android:layout_marginBottom="16dp">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtPassword"
             style="@style/InputStyle"
             android:inputType="textPassword"
             android:paddingTop="12dp"
@@ -86,6 +73,7 @@
         android:layout_marginBottom="24dp">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtConfirmPassword"
             style="@style/InputStyle"
             android:inputType="textPassword"
             android:paddingTop="12dp"
