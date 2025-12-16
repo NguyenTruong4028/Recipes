@@ -1,6 +1,7 @@
 package ntu.nguyentruong.smartrecipeapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +65,14 @@ public class ListRecipesAdapter extends RecyclerView.Adapter<ListRecipesAdapter.
             }
         }
 
+        holder.itemView.setOnClickListener(view -> {
+            MonAn monAnClick = listMonAn.get(position);
 
+            Intent intent = new Intent(context, DetailActivity.class);
+            // Truyền cả object MonAn sang (Nhờ implements Serializable)
+            intent.putExtra("object_monan", monAnClick);
+            context.startActivity(intent);
+        });
         if (missingItems.isEmpty()) {
             holder.tvMissing.setText("Đủ nguyên liệu! Nấu ngay!");
             holder.tvMissing.setTextColor(context.getResources().getColor(android.R.color.holo_green_dark));
