@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +37,8 @@ public class ProfileFragment extends Fragment {
     // Firebase
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private MyRecipeAdapter adapter;
+    private List<MonAn> myRecipeList;
 
     @Nullable
     @Override
@@ -79,9 +82,9 @@ public class ProfileFragment extends Fragment {
         // Sự kiện nút "+ Tạo mới"
         btnCreateNewRecipe.setOnClickListener(v -> {
             // Chuyển sang Activity đăng món ăn (Bạn cần tạo Activity này sau)
-//            startActivity(new Intent(getActivity(), AddFoodsActivity2.class));
-//            Toast.makeText(getContext(), "Chuyển sang trang đề xuât món ăn", Toast.LENGTH_SHORT).show();
-            addSampleData();
+            startActivity(new Intent(getActivity(), AddFoodsActivity2.class));
+            Toast.makeText(getContext(), "Chuyển sang trang đề xuât món ăn", Toast.LENGTH_SHORT).show();
+            //addSampleData();
         });
     }
 
@@ -120,13 +123,32 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupMyRecipesRecycler() {
+        myRecipeList = new ArrayList<>();
+        adapter = new MyRecipeAdapter(getContext(), myRecipeList);
         // Cấu hình hiển thị danh sách nằm ngang (Horizontal)
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         recyclerMyRecipes.setLayoutManager(layoutManager);
+        recyclerMyRecipes.setAdapter(adapter);
+        loadUserRecipes();
 
-        // TODO: Sau này bạn cần tạo Adapter và setAdapter ở đây để hiển thị món ăn thật
-        // MyRecipeAdapter adapter = new MyRecipeAdapter(danhSachMonAn);
-        // recyclerMyRecipes.setAdapter(adapter);
+    }
+    private void loadUserRecipes() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
+
+        // Query: Lấy các món ăn mà authorId == userId hiện tại
+        db.collection("recipes")
+                .whereEqualTo("authorId", user.getUid())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    myRecipeList.clear();
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // Convert toàn bộ data về List<MonAn>
+                        List<MonAn> list = queryDocumentSnapshots.toObjects(MonAn.class);
+                        myRecipeList.addAll(list);
+                        adapter.notifyDataSetChanged(); // Cập nhật giao diện
+                    }
+                });
     }
     private void addSampleData() {
         FirebaseUser user = mAuth.getCurrentUser();

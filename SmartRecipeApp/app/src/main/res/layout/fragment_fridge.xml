@@ -79,7 +79,7 @@
         android:id="@+id/tvPantryTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="In your pantry:"
+        android:text="Nguyên liệu của bạn:"
         android:textStyle="bold"
         android:textColor="@color/text_dark"
         android:textSize="16sp"

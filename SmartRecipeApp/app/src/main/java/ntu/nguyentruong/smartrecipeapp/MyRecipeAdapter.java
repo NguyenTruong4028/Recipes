@@ -10,46 +10,52 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 public class MyRecipeAdapter extends RecyclerView.Adapter<MyRecipeAdapter.MyRecipeViewHolder>{
     private Context context;
-    private List<MonAn> list;
+    private List<MonAn> listMonAn;
 
-    public MyRecipeAdapter(Context context, List<MonAn> list) {
+    public MyRecipeAdapter(Context context, List<MonAn> listMonAn) {
         this.context = context;
-        this.list = list;
+        this.listMonAn = listMonAn;
     }
 
     @NonNull
     @Override
-    public MyRecipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return null;
+    public MyRecipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+    {
+        View view = LayoutInflater.from(context).inflate(R.layout.item_mini,parent,false);
+        return new MyRecipeViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MyRecipeViewHolder holder, int position) {
+        MonAn mon = listMonAn.get(position);
+        holder.tvName.setText(mon.getTenMon());;
 
+        // Load ảnh món ăn
+        Glide.with(context).load(mon.getHinhAnh()).into(holder.imgMon);
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return listMonAn.size();
     }
 
 
     public static class MyRecipeViewHolder extends RecyclerView.ViewHolder {
 
         ImageView imgMon;
-        TextView tvName,tvTime,tvDifficulty,tvMissingIngredients;
+        TextView tvName;
 
         public MyRecipeViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgMon = itemView.findViewById(R.id.imgFood);
-            tvName = itemView.findViewById(R.id.tvRecipeName);
-            tvTime = itemView.findViewById(R.id.tvTime);
-            tvDifficulty = itemView.findViewById(R.id.tvDifficulty);
-            tvMissingIngredients = itemView.findViewById(R.id.tvMissingIngredients);
+            imgMon = itemView.findViewById(R.id.imgFoodMini);
+            tvName = itemView.findViewById(R.id.tvNameMini);
+
         }
     }
 }
