@@ -57,7 +57,7 @@ public class FoodsActivity extends AppCompatActivity {
                     resultList.clear();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         MonAn mon = doc.toObject(MonAn.class);
-
+                        mon.setId(doc.getId());
                         // Logic lọc: Nếu món ăn có chứa ÍT NHẤT 1 nguyên liệu của user thì hiện
                         if (isMatching(mon, userIngredients)) {
                             resultList.add(mon);

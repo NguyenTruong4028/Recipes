@@ -2,6 +2,7 @@ package ntu.nguyentruong.smartrecipeapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -18,6 +19,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
@@ -27,15 +33,23 @@ public class DetailActivity extends AppCompatActivity {
     private LinearLayout layoutIngredientsList, layoutStepsList;
     private ImageButton btnBackDetail, btnSaveFavorite;
     private MonAn monAnHienTai;
+    private FirebaseFirestore db;
+    private FirebaseUser currentUser;
+    private boolean isLiked = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        // 1. Khởi tạo Firebase
+        db = FirebaseFirestore.getInstance();
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        // 2. Khởi tạo các view
         initViews();
         getDataFromIntent();
 
         if (monAnHienTai != null) {
             setupUI();
+            checkFavoriteStatus();
             handleEvents();
         } else {
             Toast.makeText(this, "Không tìm thấy dữ liệu món ăn", Toast.LENGTH_SHORT).show();
@@ -58,8 +72,6 @@ public class DetailActivity extends AppCompatActivity {
 
     private void getDataFromIntent() {
         Intent intent = getIntent();
-        // Lấy object MonAn được truyền sang.
-        // Key "object_monan" phải khớp với key bên Activity gửi (Danh sách)
         if (intent != null && intent.hasExtra("object_monan")) {
             monAnHienTai = (MonAn) intent.getSerializableExtra("object_monan");
         }
@@ -78,7 +90,7 @@ public class DetailActivity extends AppCompatActivity {
         Glide.with(this)
                 .load(monAnHienTai.getHinhAnh())
                 .placeholder(R.drawable.bg_rounded_pink) // Hình hiển thị khi đang load
-                .error(R.drawable.bg_rounded_pink)       // Hình hiển thị khi lỗi
+                .error(R.drawable.bg_rounded_launch)       // Hình hiển thị khi lỗi
                 .into(imgDetailFood);
 
         // 3. Xử lý danh sách Nguyên liệu (Dynamic CheckBox)
@@ -115,36 +127,73 @@ public class DetailActivity extends AppCompatActivity {
             }
         }
 
-         //5. Kiểm tra trạng thái yêu thích (Nếu có ID người dùng)
-         String currentUserId = "lay_tu_firebase_auth";
-         if (monAnHienTai.getLikedBy().contains(currentUserId)) {
-             btnSaveFavorite.setImageResource(R.drawable.ic_heart_fill);
-         }
     }
 
     private void handleEvents() {
         btnBackDetail.setOnClickListener(v -> finish());
 
         btnSaveFavorite.setOnClickListener(v -> {
-            // Đây là logic xử lý UI tạm thời
-            // Về sau bạn sẽ gọi hàm update lên Firestore ở đây
-            boolean isSelected = btnSaveFavorite.isSelected(); // Dùng biến cờ hoặc check drawable
 
-            // Ví dụ logic đơn giản để đổi icon:
-            // Bạn cần logic check xem hiện tại đang like hay không like
-            // Tạm thời mình giả lập toggle:
-            if (btnSaveFavorite.getTag() == null || btnSaveFavorite.getTag().equals("unlike")) {
-                btnSaveFavorite.setImageResource(R.drawable.ic_heart_fill); // Cần có icon tim đặc
-                btnSaveFavorite.setTag("liked");
-                Toast.makeText(this, "Đã thích món " + monAnHienTai.getTenMon(), Toast.LENGTH_SHORT).show();
+            isLiked = !isLiked;
+            updateUIButton(isLiked); // Đổi icon
 
-                // TODO: Thêm User ID vào list likedBy và update Firestore tăng likeCount
-            } else {
-                btnSaveFavorite.setImageResource(R.drawable.ic_heart_outline);
-                btnSaveFavorite.setTag("unlike");
-
-                // TODO: Xóa User ID khỏi list likedBy và update Firestore giảm likeCount
-            }
+            // Gửi dữ liệu lên Firestore
+            updateFavoriteToFirestore(isLiked);
         });
+    }
+    private void updateUIButton(boolean liked) {
+        if (liked) {
+            btnSaveFavorite.setImageResource(R.drawable.ic_heart_fill);
+            Toast.makeText(this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+        } else {
+            btnSaveFavorite.setImageResource(R.drawable.ic_heart_outline);
+            Toast.makeText(this, "Đã bỏ yêu thích", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateFavoriteToFirestore(boolean isAdding) {
+        String myUid = currentUser.getUid();
+        String docId = monAnHienTai.getId();
+
+        if (docId == null || docId.isEmpty()) {
+            Log.e("FAVORITE", "Lỗi: Document ID bị null");
+            return;
+        }
+
+        DocumentReference docRef = db.collection("recipes").document(docId);
+
+        if (isAdding) {
+            // 1. Thêm UID vào mảng likedBy
+            // 2. Tăng likeCount lên 1
+            docRef.update("likedBy", FieldValue.arrayUnion(myUid),
+                            "likeCount", FieldValue.increment(1))
+                    .addOnFailureListener(e -> {
+                        // Nếu lỗi thì hoàn tác lại UI
+                        updateUIButton(false);
+                        isLiked = false;
+                        Toast.makeText(this, "Lỗi kết nối: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            docRef.update("likedBy", FieldValue.arrayRemove(myUid),
+                            "likeCount", FieldValue.increment(-1))
+                    .addOnFailureListener(e -> {
+                        updateUIButton(true);
+                        isLiked = true;
+                    });
+        }
+    }
+    private void checkFavoriteStatus() {
+        if (currentUser == null) return;
+
+        String myUid = currentUser.getUid();
+
+        // Kiểm tra danh sách likedBy có chứa UID của mình không
+        if (monAnHienTai.getLikedBy() != null && monAnHienTai.getLikedBy().contains(myUid)) {
+            isLiked = true;
+            btnSaveFavorite.setImageResource(R.drawable.ic_heart_fill);
+        } else {
+            isLiked = false;
+            btnSaveFavorite.setImageResource(R.drawable.ic_heart_outline);
+        }
     }
 }
