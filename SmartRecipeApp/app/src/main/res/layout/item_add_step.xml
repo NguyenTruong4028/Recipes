@@ -16,7 +16,7 @@
 
     <EditText
         android:id="@+id/edtStepContent"
-        android:layout_width="match_parent"
+        android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:minHeight="50dp"
         android:background="@drawable/bg_rounded_pink"
@@ -25,5 +25,11 @@
         android:textSize="14sp"
         android:gravity="top|start"
         android:inputType="textMultiLine"/>
-
+    <ImageButton
+        android:id="@+id/btnStepRemove"
+        android:layout_width="40dp"
+        android:layout_height="50dp"
+        android:src="@android:drawable/ic_delete"
+        android:background="?attr/selectableItemBackground"
+        />
 </LinearLayout>

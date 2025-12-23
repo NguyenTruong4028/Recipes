@@ -25,16 +25,4 @@
         app:itemIconSize="28dp"
         app:labelVisibilityMode="labeled"
         app:itemPaddingBottom="16dp"/>
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddRecipe"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_input_add"
-        app:tint="#FFFFFF"
-        app:backgroundTint="#FF5252"
-        app:elevation="6dp"
-        app:fabSize="normal"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="100dp"
-        android:contentDescription="Thêm công thức"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

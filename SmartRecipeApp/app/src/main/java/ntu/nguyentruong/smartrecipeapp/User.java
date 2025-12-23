@@ -8,6 +8,7 @@ public class User implements Serializable {
     private String fullName;
     private String role;
     private String avatarUrl;
+    private String bio;
 
     public User() { }
 
@@ -33,4 +34,6 @@ public class User implements Serializable {
 
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
 }

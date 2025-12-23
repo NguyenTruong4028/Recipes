@@ -31,5 +31,5 @@
         android:layout_height="50dp"
         android:src="@android:drawable/ic_delete"
         android:background="?attr/selectableItemBackground"
-        android:tint="#999"/>
+        />
 </LinearLayout>

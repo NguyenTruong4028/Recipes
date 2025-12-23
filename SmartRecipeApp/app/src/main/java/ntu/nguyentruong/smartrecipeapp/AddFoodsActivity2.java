@@ -64,6 +64,11 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         addStepRow();
 
         handleEvents();
+        if (getIntent().getBooleanExtra("IS_EDIT", false)) {
+            String recipeId = getIntent().getStringExtra("RECIPE_ID");
+            loadRecipeToEdit(recipeId);
+            btnPublish.setText("Cập nhật"); // Đổi tên nút
+        }
     }
 
     private void initViews() {
@@ -140,11 +145,8 @@ public class AddFoodsActivity2 extends AppCompatActivity {
 
     private void addStepRow() {
         View view = LayoutInflater.from(this).inflate(R.layout.item_add_step, layoutStepsContainer, false);
-
-        // SỬA LỖI: ID trong XML là tvStepIndex (dựa theo code XML cũ của bạn)
-        // Nếu trong XML bạn đặt là tvIndex thì sửa lại dòng này, nhưng chuẩn là tvStepIndex
         TextView tvIndex = view.findViewById(R.id.tvStepIndex);
-
+        view.findViewById(R.id.btnStepRemove).setOnClickListener(v -> layoutStepsContainer.removeView(view));
         if (tvIndex != null) {
             tvIndex.setText(String.valueOf(layoutStepsContainer.getChildCount() + 1));
         }
@@ -276,6 +278,18 @@ public class AddFoodsActivity2 extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     progressDialog.dismiss();
                     Toast.makeText(this, "Lỗi lưu dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+    private void loadRecipeToEdit(String recipeId) {
+        db.collection("recipes").document(recipeId).get()
+                .addOnSuccessListener(document -> {
+                    MonAn mon = document.toObject(MonAn.class);
+                    if (mon != null) {
+                        edtRecipeName.setText(mon.getTenMon());
+                        // ... set text cho các trường khác ...
+                        // Logic hiển thị lại nguyên liệu/cách làm hơi phức tạp (cần loop để addView)
+                        // Nếu ảnh cũ có, dùng Glide load vào imgRealPhoto
+                    }
                 });
     }
 }
