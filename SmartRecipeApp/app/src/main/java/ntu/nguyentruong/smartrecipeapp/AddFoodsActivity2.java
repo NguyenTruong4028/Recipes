@@ -1,8 +1,10 @@
 package ntu.nguyentruong.smartrecipeapp;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -12,24 +14,22 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
+import com.cloudinary.android.MediaManager;
+import com.cloudinary.android.callback.ErrorInfo;
+import com.cloudinary.android.callback.UploadCallback;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 public class AddFoodsActivity2 extends AppCompatActivity {
 
@@ -40,11 +40,13 @@ public class AddFoodsActivity2 extends AppCompatActivity {
     private LinearLayout layoutIngredientsContainer, layoutStepsContainer;
     private MaterialButton btnAddIngredientLine, btnAddStepLine, btnPublish;
 
-    private Uri imageUri; // Lưu đường dẫn ảnh đã chọn
+    private Uri imageUri;
     private ActivityResultLauncher<String> imagePickerLauncher;
 
     private FirebaseFirestore db;
-    private StorageReference storageRef;
+    // Bỏ StorageReference của Firebase đi
+    // private StorageReference storageRef;
+
     private ProgressDialog progressDialog;
 
     @Override
@@ -54,9 +56,10 @@ public class AddFoodsActivity2 extends AppCompatActivity {
 
         initViews();
         initFirebase();
+        initCloudinary(); // <-- Cấu hình Cloudinary
         setupImagePicker();
 
-        // Thêm sẵn 1 dòng nhập liệu đầu tiên cho đẹp
+        // Thêm sẵn dòng đầu tiên
         addIngredientRow();
         addStepRow();
 
@@ -78,9 +81,6 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         btnAddStepLine = findViewById(R.id.btnAddStepLine);
         btnPublish = findViewById(R.id.btnPublish);
 
-        // Nhớ xóa các view mẫu (EditText) bạn viết cứng trong XML chính
-        // để tránh bị duplicate ID hoặc xử lý sai.
-        // Trong XML chính, layoutIngredientsContainer nên rỗng.
         layoutIngredientsContainer.removeAllViews();
         layoutStepsContainer.removeAllViews();
 
@@ -91,7 +91,21 @@ public class AddFoodsActivity2 extends AppCompatActivity {
 
     private void initFirebase() {
         db = FirebaseFirestore.getInstance();
-        storageRef = FirebaseStorage.getInstance().getReference();
+    }
+
+    // --- CẤU HÌNH CLOUDINARY (QUAN TRỌNG) ---
+    private void initCloudinary() {
+        try {
+            // Kiểm tra xem đã init chưa để tránh crash khi vào lại activity
+            MediaManager.get();
+        } catch (Exception e) {
+            // Thay thế 3 dòng dưới bằng thông tin lấy từ Dashboard của Cloudinary
+            Map<String, String> config = new HashMap<>();
+            config.put("cloud_name", "dcy42u29w");
+            config.put("api_key", "872117492863343");
+            config.put("api_secret", "3LtfxWbmmO_QD9x_Spk4sCNf4N8");
+            MediaManager.init(this, config);
+        }
     }
 
     private void setupImagePicker() {
@@ -102,7 +116,6 @@ public class AddFoodsActivity2 extends AppCompatActivity {
                         imageUri = uri;
                         imgRealPhoto.setImageURI(uri);
                         imgRealPhoto.setVisibility(View.VISIBLE);
-                        // Ẩn cái icon camera đi
                         findViewById(R.id.imgRecipePreview).setVisibility(View.GONE);
                     }
                 }
@@ -111,17 +124,9 @@ public class AddFoodsActivity2 extends AppCompatActivity {
 
     private void handleEvents() {
         btnClose.setOnClickListener(v -> finish());
-
-        // Chọn ảnh
         cardUploadImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
-
-        // Thêm dòng nguyên liệu
         btnAddIngredientLine.setOnClickListener(v -> addIngredientRow());
-
-        // Thêm dòng cách làm
         btnAddStepLine.setOnClickListener(v -> addStepRow());
-
-        // Nút Đăng tải
         btnPublish.setOnClickListener(v -> validateAndUpload());
     }
 
@@ -129,26 +134,25 @@ public class AddFoodsActivity2 extends AppCompatActivity {
 
     private void addIngredientRow() {
         View view = LayoutInflater.from(this).inflate(R.layout.item_add_ingredient, layoutIngredientsContainer, false);
-
-        // Xử lý nút xóa dòng
-        view.findViewById(R.id.btnRemove).setOnClickListener(v -> {
-            layoutIngredientsContainer.removeView(view);
-        });
-
+        view.findViewById(R.id.btnRemove).setOnClickListener(v -> layoutIngredientsContainer.removeView(view));
         layoutIngredientsContainer.addView(view);
     }
 
     private void addStepRow() {
         View view = LayoutInflater.from(this).inflate(R.layout.item_add_step, layoutStepsContainer, false);
 
-        // Tự động đánh số bước (1, 2, 3...)
-        TextView tvIndex = view.findViewById(R.id.tvIndex);
-        tvIndex.setText(String.valueOf(layoutStepsContainer.getChildCount() + 1));
+        // SỬA LỖI: ID trong XML là tvStepIndex (dựa theo code XML cũ của bạn)
+        // Nếu trong XML bạn đặt là tvIndex thì sửa lại dòng này, nhưng chuẩn là tvStepIndex
+        TextView tvIndex = view.findViewById(R.id.tvStepIndex);
+
+        if (tvIndex != null) {
+            tvIndex.setText(String.valueOf(layoutStepsContainer.getChildCount() + 1));
+        }
 
         layoutStepsContainer.addView(view);
     }
 
-    // --- XỬ LÝ UPLOAD DỮ LIỆU ---
+    // --- XỬ LÝ UPLOAD VỚI CLOUDINARY ---
 
     private void validateAndUpload() {
         String name = edtRecipeName.getText().toString().trim();
@@ -163,7 +167,6 @@ public class AddFoodsActivity2 extends AppCompatActivity {
             return;
         }
 
-        // Lấy dữ liệu từ các dòng động
         List<String> ingredients = getIngredientsFromLayout();
         List<String> steps = getStepsFromLayout();
 
@@ -172,9 +175,8 @@ public class AddFoodsActivity2 extends AppCompatActivity {
             return;
         }
 
-        // Bắt đầu upload
         progressDialog.show();
-        uploadImageAndSaveRecipe(name, time, ingredients, steps);
+        uploadToCloudinary(name, time, ingredients, steps);
     }
 
     private List<String> getIngredientsFromLayout() {
@@ -188,7 +190,7 @@ public class AddFoodsActivity2 extends AppCompatActivity {
             String luong = edtQuant.getText().toString().trim();
 
             if (!ten.isEmpty()) {
-                list.add(ten + " (" + luong + ")"); // Lưu dạng: Gà (500g)
+                list.add(ten + " (" + luong + ")");
             }
         }
         return list;
@@ -208,23 +210,43 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         return list;
     }
 
-    private void uploadImageAndSaveRecipe(String name, String time, List<String> ingredients, List<String> steps) {
-        // Tên file ảnh unique
-        String fileName = UUID.randomUUID().toString();
-        StorageReference imgRef = storageRef.child("recipe_images/" + fileName);
+    // --- HÀM UPLOAD ẢNH LÊN CLOUDINARY ---
+    private void uploadToCloudinary(String name, String time, List<String> ingredients, List<String> steps) {
 
-        imgRef.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> {
-                    // Upload ảnh thành công -> Lấy URL
-                    imgRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        String imageUrl = uri.toString();
+        MediaManager.get().upload(imageUri)
+                .callback(new UploadCallback() {
+                    @Override
+                    public void onStart(String requestId) {
+                        // Bắt đầu upload
+                    }
+
+                    @Override
+                    public void onProgress(String requestId, long bytes, long totalBytes) {
+                        // Có thể cập nhật thanh progress nếu muốn
+                    }
+
+                    @Override
+                    public void onSuccess(String requestId, Map resultData) {
+                        // Upload thành công -> Lấy link ảnh HTTPS
+                        String imageUrl = (String) resultData.get("secure_url");
+
+                        // Sau khi có link ảnh, lưu thông tin vào Firestore
                         saveToFirestore(name, time, ingredients, steps, imageUrl);
-                    });
+                    }
+
+                    @Override
+                    public void onError(String requestId, ErrorInfo error) {
+                        progressDialog.dismiss();
+                        Toast.makeText(AddFoodsActivity2.this, "Lỗi Cloudinary: " + error.getDescription(), Toast.LENGTH_LONG).show();
+                        Log.e("UPLOAD_ERR", error.getDescription());
+                    }
+
+                    @Override
+                    public void onReschedule(String requestId, ErrorInfo error) {
+                        // Upload bị hoãn lại do mạng yếu...
+                    }
                 })
-                .addOnFailureListener(e -> {
-                    progressDialog.dismiss();
-                    Toast.makeText(this, "Lỗi upload ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .dispatch();
     }
 
     private void saveToFirestore(String name, String time, List<String> ingredients, List<String> steps, String imageUrl) {
@@ -234,26 +256,22 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         monAn.setTenMon(name);
         monAn.setThoiGian(time + " phút");
         monAn.setKhauPhan(edtServes.getText().toString() + " người");
-        monAn.setHinhAnh(imageUrl);
+        monAn.setHinhAnh(imageUrl); // Link ảnh từ Cloudinary
         monAn.setNguyenLieu(ingredients);
         monAn.setCachLam(steps);
         monAn.setAuthorId(currentUserId);
         monAn.setCreatedAt(System.currentTimeMillis());
+        monAn.setStatus("pending"); // Chờ duyệt
 
-        // QUAN TRỌNG: Set status là PENDING để chờ admin duyệt
-        monAn.setStatus("pending");
-
-        // Lưu vào collection "MonAn" (hoặc "recipes" - nhớ thống nhất tên)
-        db.collection("recipes") // Hoặc Constants.COLLECTION_MON_AN
+        db.collection("recipes")
                 .add(monAn)
                 .addOnSuccessListener(documentReference -> {
-                    // Update lại ID cho document vừa tạo
                     String docId = documentReference.getId();
                     documentReference.update("id", docId);
 
                     progressDialog.dismiss();
                     Toast.makeText(this, "Gửi thành công! Vui lòng chờ Admin duyệt.", Toast.LENGTH_LONG).show();
-                    finish(); // Đóng màn hình
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     progressDialog.dismiss();
