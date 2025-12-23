@@ -17,9 +17,27 @@ public class MonAn implements Serializable {
     private String authorName;      // Tên người đăng
     private String status;          // "pending" (chờ), "approved" (duyệt), "rejected" (hủy)
     private int likeCount;          // Số lượt thích
-    private List<String> likedBy;   // Danh sách UID những người đã like
+    private List<String> likedBy;// Danh sách UID những người đã like
+    private long createdAt;
 
     public MonAn() {}
+
+    public MonAn(String id, String tenMon, String hinhAnh, String thoiGian, String khauPhan, String doKho, List<String> nguyenLieu, List<String> cachLam, String authorId, String authorName, String status, int likeCount, List<String> likedBy, long createdAt) {
+        this.id = id;
+        this.tenMon = tenMon;
+        this.hinhAnh = hinhAnh;
+        this.thoiGian = thoiGian;
+        this.khauPhan = khauPhan;
+        this.doKho = doKho;
+        this.nguyenLieu = nguyenLieu;
+        this.cachLam = cachLam;
+        this.authorId = authorId;
+        this.authorName = authorName;
+        this.status = status;
+        this.likeCount = likeCount;
+        this.likedBy = likedBy;
+        this.createdAt = createdAt;
+    }
 
     public MonAn(String id, String tenMon, String hinhAnh, String thoiGian, String khauPhan, String doKho, List<String> nguyenLieu, List<String> cachLam, String authorId, String authorName, String status, int likeCount, List<String> likedBy) {
         this.id = id;
@@ -32,9 +50,18 @@ public class MonAn implements Serializable {
         this.cachLam = cachLam;
         this.authorId = authorId;
         this.authorName = authorName;
-        this.status = "Chờ duyệt";
+        this.status = "pending";
         this.likeCount = 0;
         this.likedBy = new ArrayList<>();
+        this.createdAt = System.currentTimeMillis();
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getId() {

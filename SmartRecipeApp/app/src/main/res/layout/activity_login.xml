@@ -97,7 +97,8 @@
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:textColor="#555555"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+               />
 
         </com.google.android.material.textfield.TextInputLayout>
         <Space

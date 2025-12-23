@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginBottom="8dp">
+
+    <EditText
+        android:id="@+id/edtIngredientName"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_rounded_pink"
+        android:hint="Tên (VD: Gà)"
+        android:paddingHorizontal="16dp"
+        android:textSize="14sp"/>
+
+    <EditText
+        android:id="@+id/edtIngredientQuant"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/bg_rounded_pink"
+        android:hint="Định lượng"
+        android:paddingHorizontal="16dp"
+        android:textSize="14sp"/>
+
+    <ImageButton
+        android:id="@+id/btnRemove"
+        android:layout_width="40dp"
+        android:layout_height="50dp"
+        android:src="@android:drawable/ic_delete"
+        android:background="?attr/selectableItemBackground"
+        android:tint="#999"/>
+</LinearLayout>
