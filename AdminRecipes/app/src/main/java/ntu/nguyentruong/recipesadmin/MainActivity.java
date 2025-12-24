@@ -1,7 +1,9 @@
 package ntu.nguyentruong.recipesadmin;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -49,23 +51,31 @@ public class MainActivity extends AppCompatActivity {
         btnRefresh.setOnClickListener(v -> loadPendingRecipes());
     }
 
+    // Trong MainActivity.java (App Admin)
+
     private void loadPendingRecipes() {
-        // Lắng nghe Realtime các bài có status = "pending"
+        // Admin chỉ lấy những bài có status là "pending" trong cùng collection "recipes"
         db.collection("recipes")
-                .whereEqualTo("status", "pending")
+                .whereEqualTo("status", "pending") // Phải khớp chữ "pending" bên User gửi lên
                 .addSnapshotListener((value, error) -> {
-                    if (error != null) return;
+                    if (error != null) {
+                        Log.e("AdminError", "Lỗi lấy dữ liệu: " + error.getMessage());
+                        return;
+                    }
 
                     pendingList.clear();
-                    if (value != null) {
+                    if (value != null && !value.isEmpty()) {
                         for (DocumentSnapshot doc : value.getDocuments()) {
                             MonAn mon = doc.toObject(MonAn.class);
                             if (mon != null) {
-                                mon.setId(doc.getId()); // Lưu ID quan trọng
+                                mon.setId(doc.getId());
                                 pendingList.add(mon);
                             }
                         }
                         adapter.notifyDataSetChanged();
+                    } else {
+                        // Nếu không có bài nào
+                        Toast.makeText(this, "Không có bài chờ duyệt", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

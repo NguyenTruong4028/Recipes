@@ -50,26 +50,35 @@ public class FoodsActivity extends AppCompatActivity {
     private void searchRecipes() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         tvResultCount.setText("Đang tìm kiếm món ngon...");
-        // Lấy tất cả món ăn về rồi lọc (Client-side filtering)
+
+        // SỬA LẠI KHÚC NÀY:
+        // Chỉ lấy những món có status là "approved"
         db.collection("recipes")
+                .whereEqualTo("status", "approved") // <--- QUAN TRỌNG: Thêm dòng này
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     resultList.clear();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         MonAn mon = doc.toObject(MonAn.class);
                         mon.setId(doc.getId());
-                        // Logic lọc: Nếu món ăn có chứa ÍT NHẤT 1 nguyên liệu của user thì hiện
+
+                        // Logic lọc nguyên liệu giữ nguyên
                         if (isMatching(mon, userIngredients)) {
                             resultList.add(mon);
                         }
                     }
                     adapter.notifyDataSetChanged();
+
+                    // Cập nhật text hiển thị số lượng
                     int count = resultList.size();
                     if (count > 0) {
                         tvResultCount.setText("Tìm thấy " + count + " món từ nguyên liệu của bạn");
                     } else {
                         tvResultCount.setText("Chưa tìm thấy món nào phù hợp :(");
                     }
+                })
+                .addOnFailureListener(e -> {
+                    tvResultCount.setText("Lỗi kết nối server!");
                 });
     }
 

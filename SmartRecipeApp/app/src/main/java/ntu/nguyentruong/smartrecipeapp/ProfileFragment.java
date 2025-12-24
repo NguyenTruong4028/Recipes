@@ -111,7 +111,7 @@ public class ProfileFragment extends Fragment {
 
         // 1. Đếm số bài viết (Tổng các bài của user)
         db.collection("recipes").whereEqualTo("authorId", uid)
-                .addSnapshotListener((snapshots, e) -> {
+                .whereEqualTo("status", "approved")                .addSnapshotListener((snapshots, e) -> {
                     if (snapshots != null) {
                         tvPostCount.setText(String.valueOf(snapshots.size()));
 
