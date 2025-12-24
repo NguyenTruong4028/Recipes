@@ -49,7 +49,7 @@ public class MyRecipeAdapter extends RecyclerView.Adapter<MyRecipeAdapter.MyReci
         intent.putExtra("RECIPE_ID", monAn.getId());
         // Flag để biết là đang sửa chứ không phải tạo mới
         intent.putExtra("IS_EDIT", true);
-        context.startActivity(intent);
+        holder.itemView.setOnClickListener(v -> context.startActivity(intent));
     }
 
     @Override
