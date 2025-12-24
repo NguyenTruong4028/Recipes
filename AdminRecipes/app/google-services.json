@@ -7,9 +7,28 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:618391150434:android:7f5348915b17ce166b963b",
+        "mobilesdk_app_id": "1:618391150434:android:5b0cef503fe3beba6b963b",
         "android_client_info": {
           "package_name": "ntu.nguyentruong.recipesadmin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjv8OXLXeiIwI6rweaNdG97-O2LcUKDEk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:618391150434:android:b08fe731047e46686b963b",
+        "android_client_info": {
+          "package_name": "ntu.nguyentruong.smartrecipeapp"
         }
       },
       "oauth_client": [],

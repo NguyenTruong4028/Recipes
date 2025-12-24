@@ -10,12 +10,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class DetailAdminActivity extends AppCompatActivity {
+public class DetailRecipesActivity extends AppCompatActivity {
 
     private ImageView imgDetail;
     private TextView tvName, tvInfo, tvIngredients, tvSteps;
@@ -27,7 +26,7 @@ public class DetailAdminActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detail_admin);
+        setContentView(R.layout.activity_detail_recipes);
 
         db = FirebaseFirestore.getInstance();
         recipeId = getIntent().getStringExtra("RECIPE_ID");

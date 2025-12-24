@@ -9,7 +9,7 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="ntu.nguyentruong.recipesadmin" />
-                  <option name="mobileSdkAppId" value="1:618391150434:android:7f5348915b17ce166b963b" />
+                  <option name="mobileSdkAppId" value="1:618391150434:android:5b0cef503fe3beba6b963b" />
                   <option name="projectId" value="smartrecipeapp-941bd" />
                   <option name="projectNumber" value="618391150434" />
                 </ConnectionSetting>

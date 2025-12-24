@@ -47,7 +47,7 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ItemReci
 
         // Click vào item -> Mở trang duyệt
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, DetailAdminActivity.class);
+            Intent intent = new Intent(context, DetailRecipesActivity.class);
             intent.putExtra("RECIPE_ID", mon.getId()); // Truyền ID sang
             context.startActivity(intent);
         });
