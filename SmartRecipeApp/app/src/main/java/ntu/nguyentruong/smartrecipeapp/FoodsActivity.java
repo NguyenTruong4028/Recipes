@@ -54,7 +54,7 @@ public class FoodsActivity extends AppCompatActivity {
         // SỬA LẠI KHÚC NÀY:
         // Chỉ lấy những món có status là "approved"
         db.collection("recipes")
-                .whereEqualTo("status", "approved") // <--- QUAN TRỌNG: Thêm dòng này
+                .whereEqualTo("status", "approved")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     resultList.clear();

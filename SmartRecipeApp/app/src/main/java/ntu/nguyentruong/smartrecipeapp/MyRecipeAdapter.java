@@ -99,7 +99,7 @@ public class MyRecipeAdapter extends RecyclerView.Adapter<MyRecipeAdapter.MyReci
                     .setNegativeButton("Hủy", null)
                     .show();
         });
-        holder.tvLikeCount.setText(monAn.getLikeCount());
+        holder.tvLikeCount.setText(monAn.getLikeCount() + " ❤️");
 
         // Vì đây là Adapter của "Bài viết của tôi", nên luôn hiện nút sửa xóa
         if (holder.layoutActionButtons != null) {

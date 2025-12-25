@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,6 +114,7 @@ public class ProfileFragment extends Fragment {
         // 1. Đếm số bài viết (Vẫn lấy tất cả để hiển thị list, nhưng chỉ đếm bài approved)
         db.collection("recipes")
                 .whereEqualTo("authorId", uid)
+                .orderBy("likeCount", Query.Direction.DESCENDING)
                 .addSnapshotListener((value, error) -> {
                     if (error != null) return;
 

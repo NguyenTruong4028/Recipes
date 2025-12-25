@@ -292,7 +292,8 @@ public class AddFoodsActivity2 extends AppCompatActivity {
             data.put("cachLam", steps);
             data.put("authorId", currentUserId);
             data.put("createdAt", System.currentTimeMillis());
-
+            data.put("likeCount", 0);
+            data.put("likedBy", new ArrayList<String>());
             // --- QUAN TRỌNG NHẤT: LOGIC CHỜ DUYỆT ---
             data.put("status", "pending");   // Bắt buộc là "pending"
             data.put("isPublic", false);     // Ẩn khỏi trang chủ ngay lập tức

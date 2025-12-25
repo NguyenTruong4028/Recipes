@@ -44,6 +44,7 @@ public class ListRecipesAdapter extends RecyclerView.Adapter<ListRecipesAdapter.
         holder.tvName.setText(mon.getTenMon());
         holder.tvTime.setText(mon.getThoiGian());
         holder.tvDifficulty.setText(mon.getDoKho());
+        holder.tvlikeCount.setText(mon.getLikeCount() +  " lượt thích");
 
         Glide.with(context).load(mon.getHinhAnh()).into(holder.imgFood);
 
@@ -90,7 +91,7 @@ public class ListRecipesAdapter extends RecyclerView.Adapter<ListRecipesAdapter.
 
     public static class ItemRecipesViewHolder extends RecyclerView.ViewHolder {
         ImageView imgFood;
-        TextView tvName, tvTime, tvDifficulty, tvMissing;
+        TextView tvName, tvTime, tvDifficulty, tvMissing,tvlikeCount;
         ImageButton btnFavorite;
 
 
@@ -102,6 +103,7 @@ public class ListRecipesAdapter extends RecyclerView.Adapter<ListRecipesAdapter.
             tvDifficulty = itemView.findViewById(R.id.tvDifficulty);
             tvMissing = itemView.findViewById(R.id.tvMissingIngredients);
             btnFavorite = itemView.findViewById(R.id.btnFavorite);
+            tvlikeCount = itemView.findViewById(R.id.tvLikeCount);
         }
     }
 }
