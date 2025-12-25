@@ -1,8 +1,10 @@
 package ntu.nguyentruong.smartrecipeapp;
 
 import android.app.ProgressDialog;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +28,8 @@ import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -240,133 +244,171 @@ public class AddFoodsActivity2 extends AppCompatActivity {
     }
 
     private void uploadToCloudinary(String name, String time, List<String> ingredients, List<String> steps) {
-        MediaManager.get().upload(imageUri)
-                .callback(new UploadCallback() {
-                    @Override
-                    public void onStart(String requestId) {}
-
-                    @Override
-                    public void onSuccess(String requestId, Map resultData) {
-                        String newImageUrl = (String) resultData.get("secure_url");
-                        // Upload xong thì lưu vào Firestore
-                        saveToFirestore(name, time, ingredients, steps, newImageUrl);
-                    }
-
-                    @Override
-                    public void onError(String requestId, ErrorInfo error) {
-                        progressDialog.dismiss();
-                        Toast.makeText(AddFoodsActivity2.this, "Lỗi upload ảnh: " + error.getDescription(), Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onReschedule(String requestId, ErrorInfo error) {}
-                    @Override
-                    public void onProgress(String requestId, long bytes, long totalBytes) {}
-                }).dispatch();
-    }
-
-    // --- HÀM LƯU / CẬP NHẬT FIRESTORE ---
-    private void saveToFirestore(String name, String time, List<String> ingredients, List<String> steps, String imageUrl) {
-        String currentUserId = FirebaseAuth.getInstance().getUid();
-
-        // Tạo object MonAn (hoặc Map)
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", ""); // ID sẽ được update sau khi add thành công
-        data.put("tenMon", name);
-        data.put("thoiGian", time);
-        data.put("khauPhan", edtServes.getText().toString());
-        data.put("hinhAnh", imageUrl);
-        data.put("nguyenLieu", ingredients);
-        data.put("cachLam", steps);
-        data.put("authorId", currentUserId);
-        data.put("createdAt", System.currentTimeMillis());
-
-        // --- QUAN TRỌNG NHẤT: LOGIC CHỜ DUYỆT ---
-        data.put("status", "pending");   // Bắt buộc là "pending"
-        data.put("isPublic", false);     // Ẩn khỏi trang chủ ngay lập tức
-
-        // Lưu vào collection chung là "recipes"
-        db.collection("recipes") // Đảm bảo tên collection chính xác là "recipes"
-                .add(data)
-                .addOnSuccessListener(documentReference -> {
-                    // Cập nhật lại ID cho document
-                    documentReference.update("id", documentReference.getId());
-
-                    progressDialog.dismiss();
-                    // Thông báo rõ ràng
-                    Toast.makeText(this, "Đã gửi món ăn! Vui lòng chờ Admin duyệt.", Toast.LENGTH_LONG).show();
-                    finish(); // Đóng màn hình, KHÔNG ĐƯỢC tự ý add vào list hiển thị cục bộ
-                })
-                .addOnFailureListener(e -> {
-                    progressDialog.dismiss();
-                    Toast.makeText(this, "Lỗi gửi dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    // --- LOGIC LOAD DỮ LIỆU ĐỂ SỬA ---
-    private void loadRecipeToEdit(String recipeId) {
-        progressDialog.setMessage("Đang tải dữ liệu cũ...");
-        progressDialog.show();
-
-        db.collection("recipes").document(recipeId).get()
-                .addOnSuccessListener(document -> {
-                    progressDialog.dismiss();
-                    MonAn mon = document.toObject(MonAn.class);
-                    if (mon != null) {
-                        // 1. Load thông tin cơ bản
-                        edtRecipeName.setText(mon.getTenMon());
-
-                        // Xử lý chuỗi thời gian (bỏ chữ "phút" để hiện số vào edittext)
-                        String timeStr = mon.getThoiGian().replace("phút", "").trim();
-                        edtTime.setText(timeStr);
-
-                        String servesStr = mon.getKhauPhan().replace("người", "").trim();
-                        edtServes.setText(servesStr);
-
-                        // 2. Load ảnh cũ
-                        oldImageUrl = mon.getHinhAnh();
-                        Glide.with(this).load(oldImageUrl).into(imgRealPhoto);
-                        imgRealPhoto.setVisibility(View.VISIBLE);
-                        findViewById(R.id.imgRecipePreview).setVisibility(View.GONE);
-
-                        // 3. Load Nguyên liệu (Phức tạp: Phải tách chuỗi "Tên (SL)" ra)
-                        if (mon.getNguyenLieu() != null) {
-                            for (String item : mon.getNguyenLieu()) {
-                                // Giả sử format là "Thịt bò (500g)"
-                                String name = item;
-                                String quant = "";
-                                if (item.contains("(") && item.endsWith(")")) {
-                                    int index = item.lastIndexOf("(");
-                                    name = item.substring(0, index).trim();
-                                    quant = item.substring(index + 1, item.length() - 1);
-                                }
-                                addIngredientRow(name, quant);
-                            }
+        byte[] data = compressImage(imageUri);
+        if (data != null) {
+            MediaManager.get().upload(data)
+                    .callback(new UploadCallback() {
+                        @Override
+                        public void onStart(String requestId) {
                         }
 
-                        // 4. Load Cách làm
-                        if (mon.getCachLam() != null) {
-                            for (String step : mon.getCachLam()) {
-                                addStepRow(step);
-                            }
+                        @Override
+                        public void onSuccess(String requestId, Map resultData) {
+                            String newImageUrl = (String) resultData.get("secure_url");
+                            // Upload xong thì lưu vào Firestore
+                            saveToFirestore(name, time, ingredients, steps, newImageUrl);
                         }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    progressDialog.dismiss();
-                    Toast.makeText(this, "Lỗi tải bài viết", Toast.LENGTH_SHORT).show();
-                    finish();
-                });
-    }
 
-    // Hàm phụ để tạo keyword tìm kiếm (Không bắt buộc)
-    private List<String> generateKeywords(String name) {
-        List<String> keywords = new ArrayList<>();
-        String[] words = name.toLowerCase().split(" ");
-        for (String word : words) {
-            keywords.add(word);
+                        @Override
+                        public void onError(String requestId, ErrorInfo error) {
+                            progressDialog.dismiss();
+                            Toast.makeText(AddFoodsActivity2.this, "Lỗi upload ảnh: " + error.getDescription(), Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onReschedule(String requestId, ErrorInfo error) {
+                        }
+
+                        @Override
+                        public void onProgress(String requestId, long bytes, long totalBytes) {
+                        }
+                    }).dispatch();
         }
-        keywords.add(name.toLowerCase());
-        return keywords;
     }
-}
+
+        // --- HÀM LƯU / CẬP NHẬT FIRESTORE ---
+        private void saveToFirestore (String name, String
+        time, List < String > ingredients, List < String > steps, String imageUrl){
+            String currentUserId = FirebaseAuth.getInstance().getUid();
+
+            // Tạo object MonAn (hoặc Map)
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", ""); // ID sẽ được update sau khi add thành công
+            data.put("tenMon", name);
+            data.put("thoiGian", time);
+            data.put("khauPhan", edtServes.getText().toString());
+            data.put("hinhAnh", imageUrl);
+            data.put("nguyenLieu", ingredients);
+            data.put("cachLam", steps);
+            data.put("authorId", currentUserId);
+            data.put("createdAt", System.currentTimeMillis());
+
+            // --- QUAN TRỌNG NHẤT: LOGIC CHỜ DUYỆT ---
+            data.put("status", "pending");   // Bắt buộc là "pending"
+            data.put("isPublic", false);     // Ẩn khỏi trang chủ ngay lập tức
+
+            // Lưu vào collection chung là "recipes"
+            db.collection("recipes") // Đảm bảo tên collection chính xác là "recipes"
+                    .add(data)
+                    .addOnSuccessListener(documentReference -> {
+                        // Cập nhật lại ID cho document
+                        documentReference.update("id", documentReference.getId());
+
+                        progressDialog.dismiss();
+                        // Thông báo rõ ràng
+                        Toast.makeText(this, "Đã gửi món ăn! Vui lòng chờ Admin duyệt.", Toast.LENGTH_LONG).show();
+                        finish(); // Đóng màn hình, KHÔNG ĐƯỢC tự ý add vào list hiển thị cục bộ
+                    })
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(this, "Lỗi gửi dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
+
+        // --- LOGIC LOAD DỮ LIỆU ĐỂ SỬA ---
+        private void loadRecipeToEdit (String recipeId){
+            progressDialog.setMessage("Đang tải dữ liệu cũ...");
+            progressDialog.show();
+
+            db.collection("recipes").document(recipeId).get()
+                    .addOnSuccessListener(document -> {
+                        progressDialog.dismiss();
+                        MonAn mon = document.toObject(MonAn.class);
+                        if (mon != null) {
+                            // 1. Load thông tin cơ bản
+                            edtRecipeName.setText(mon.getTenMon());
+
+                            // Xử lý chuỗi thời gian (bỏ chữ "phút" để hiện số vào edittext)
+                            String timeStr = mon.getThoiGian().replace("phút", "").trim();
+                            edtTime.setText(timeStr);
+
+                            String servesStr = mon.getKhauPhan().replace("người", "").trim();
+                            edtServes.setText(servesStr);
+
+                            // 2. Load ảnh cũ
+                            oldImageUrl = mon.getHinhAnh();
+                            Glide.with(this).load(oldImageUrl).into(imgRealPhoto);
+                            imgRealPhoto.setVisibility(View.VISIBLE);
+                            findViewById(R.id.imgRecipePreview).setVisibility(View.GONE);
+
+                            // 3. Load Nguyên liệu (Phức tạp: Phải tách chuỗi "Tên (SL)" ra)
+                            if (mon.getNguyenLieu() != null) {
+                                for (String item : mon.getNguyenLieu()) {
+                                    // Giả sử format là "Thịt bò (500g)"
+                                    String name = item;
+                                    String quant = "";
+                                    if (item.contains("(") && item.endsWith(")")) {
+                                        int index = item.lastIndexOf("(");
+                                        name = item.substring(0, index).trim();
+                                        quant = item.substring(index + 1, item.length() - 1);
+                                    }
+                                    addIngredientRow(name, quant);
+                                }
+                            }
+
+                            // 4. Load Cách làm
+                            if (mon.getCachLam() != null) {
+                                for (String step : mon.getCachLam()) {
+                                    addStepRow(step);
+                                }
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(this, "Lỗi tải bài viết", Toast.LENGTH_SHORT).show();
+                        finish();
+                    });
+        }
+
+        // Hàm phụ để tạo keyword tìm kiếm (Không bắt buộc)
+        private List<String> generateKeywords (String name){
+            List<String> keywords = new ArrayList<>();
+            String[] words = name.toLowerCase().split(" ");
+            for (String word : words) {
+                keywords.add(word);
+            }
+            keywords.add(name.toLowerCase());
+            return keywords;
+        }
+    private byte[] compressImage (Uri imageUri){
+            try {
+                // 1. Lấy Bitmap từ Uri
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+
+                // 2. Resize ảnh nhỏ lại (tối đa 1024px chiều rộng) để nhẹ hơn
+                int maxSize = 1024;
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
+
+                float bitmapRatio = (float) width / (float) height;
+                if (bitmapRatio > 1) {
+                    width = maxSize;
+                    height = (int) (width / bitmapRatio);
+                } else {
+                    height = maxSize;
+                    width = (int) (height * bitmapRatio);
+                }
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+
+                // 3. Nén xuống JPEG chất lượng 75%
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 75, stream);
+                return stream.toByteArray();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }

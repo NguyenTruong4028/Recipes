@@ -84,6 +84,7 @@ public class DetailRecipesActivity extends AppCompatActivity {
     private void setupActions() {
         // Nút Duyệt
         btnApprove.setOnClickListener(v -> {
+            Toast.makeText(this, "Đang xử lý...", Toast.LENGTH_SHORT).show();
             db.collection("recipes").document(recipeId)
                     .update("status", "approved")
                     .addOnSuccessListener(aVoid -> {

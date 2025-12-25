@@ -3,6 +3,7 @@ package ntu.nguyentruong.recipesadmin;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -26,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private List<MonAn> pendingList;
     private FirebaseFirestore db;
     private ImageView btnRefresh;
+    private TextView tvEmptyState;
+    private android.widget.ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +46,10 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerPending);
         btnRefresh = findViewById(R.id.btnRefresh);
 
+        // Ánh xạ mới
+        tvEmptyState = findViewById(R.id.tvEmptyState);
+        progressBar = findViewById(R.id.progressBar);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         pendingList = new ArrayList<>();
         adapter = new RecipesAdapter(this, pendingList);
@@ -51,20 +58,28 @@ public class MainActivity extends AppCompatActivity {
         btnRefresh.setOnClickListener(v -> loadPendingRecipes());
     }
 
-    // Trong MainActivity.java (App Admin)
 
     private void loadPendingRecipes() {
-        // Admin chỉ lấy những bài có status là "pending" trong cùng collection "recipes"
+        // 1. Khi bắt đầu tải, hiện vòng quay, ẩn list, ẩn thông báo rỗng
+        progressBar.setVisibility(android.view.View.VISIBLE);
+        tvEmptyState.setVisibility(android.view.View.GONE);
+        recyclerView.setVisibility(android.view.View.GONE);
+
         db.collection("recipes")
-                .whereEqualTo("status", "pending") // Phải khớp chữ "pending" bên User gửi lên
+                .whereEqualTo("status", "pending")
                 .addSnapshotListener((value, error) -> {
+                    // 2. Dữ liệu đã về (hoặc lỗi), tắt vòng quay ngay lập tức
+                    progressBar.setVisibility(android.view.View.GONE);
+
                     if (error != null) {
-                        Log.e("AdminError", "Lỗi lấy dữ liệu: " + error.getMessage());
+                        Toast.makeText(this, "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     pendingList.clear();
+
                     if (value != null && !value.isEmpty()) {
+                        // --- TRƯỜNG HỢP CÓ BÀI ---
                         for (DocumentSnapshot doc : value.getDocuments()) {
                             MonAn mon = doc.toObject(MonAn.class);
                             if (mon != null) {
@@ -72,11 +87,21 @@ public class MainActivity extends AppCompatActivity {
                                 pendingList.add(mon);
                             }
                         }
-                        adapter.notifyDataSetChanged();
+
+                        // HIỆN RecyclerView, ẨN thông báo rỗng
+                        recyclerView.setVisibility(android.view.View.VISIBLE);
+                        tvEmptyState.setVisibility(android.view.View.GONE);
+
                     } else {
-                        // Nếu không có bài nào
-                        Toast.makeText(this, "Không có bài chờ duyệt", Toast.LENGTH_SHORT).show();
+                        // --- TRƯỜNG HỢP KHÔNG CÓ BÀI ---
+                        // ẨN RecyclerView, HIỆN thông báo rỗng
+                        recyclerView.setVisibility(android.view.View.GONE);
+                        tvEmptyState.setVisibility(android.view.View.VISIBLE);
+
+                        // TUYỆT ĐỐI KHÔNG DÙNG TOAST Ở ĐÂY
                     }
+
+                    adapter.notifyDataSetChanged();
                 });
     }
 }
