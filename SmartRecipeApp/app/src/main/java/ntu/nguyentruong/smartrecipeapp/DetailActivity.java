@@ -29,7 +29,7 @@ import java.util.List;
 
 public class DetailActivity extends AppCompatActivity {
     private ImageView imgDetailFood;
-    private TextView tvDetailName, tvDetailTime,tvDetailServe;
+    private TextView tvDetailName, tvDetailTime,tvDetailServe,tvLikeCount;
     private LinearLayout layoutIngredientsList, layoutStepsList;
     private ImageButton btnBackDetail, btnSaveFavorite;
     private MonAn monAnHienTai;
@@ -62,6 +62,7 @@ public class DetailActivity extends AppCompatActivity {
         tvDetailName = findViewById(R.id.tvDetailName);
         tvDetailTime = findViewById(R.id.tvDetailTime);
         tvDetailServe = findViewById(R.id.tvDetailServe);
+        tvLikeCount = findViewById(R.id.tvLikeCount);
 
         layoutIngredientsList = findViewById(R.id.layoutIngredientsList);
         layoutStepsList = findViewById(R.id.layoutStepsList);
@@ -81,7 +82,7 @@ public class DetailActivity extends AppCompatActivity {
         // 1. Hiển thị thông tin cơ bản
         tvDetailName.setText(monAnHienTai.getTenMon());
         tvDetailTime.setText("⏱ " + monAnHienTai.getThoiGian());
-
+        updateLikeCountUI(monAnHienTai.getLikeCount());
         if(tvDetailServe != null) {
             tvDetailServe.setText("👥 " + monAnHienTai.getKhauPhan());
         }
@@ -128,16 +129,30 @@ public class DetailActivity extends AppCompatActivity {
         }
 
     }
-
+    private void updateLikeCountUI(int count) {
+        tvLikeCount.setText(count + " yêu thích");
+    }
     private void handleEvents() {
         btnBackDetail.setOnClickListener(v -> finish());
-
         btnSaveFavorite.setOnClickListener(v -> {
-
+            // Đảo trạng thái like
             isLiked = !isLiked;
-            updateUIButton(isLiked); // Đổi icon
 
-            // Gửi dữ liệu lên Firestore
+            // Xử lý số lượng hiển thị NGAY LẬP TỨC (để user thấy app mượt)
+            int currentCount = monAnHienTai.getLikeCount();
+            if (isLiked) {
+                currentCount++;
+            } else {
+                currentCount--;
+            }
+            // Lưu lại số mới vào biến tạm để hiển thị và update lần sau
+            monAnHienTai.setLikeCount(currentCount);
+
+            // Cập nhật giao diện
+            updateUIButton(isLiked);
+            updateLikeCountUI(currentCount); // <--- Cập nhật số trên màn hình
+
+            // Gửi dữ liệu lên Firestore (Code cũ của bạn giữ nguyên)
             updateFavoriteToFirestore(isLiked);
         });
     }

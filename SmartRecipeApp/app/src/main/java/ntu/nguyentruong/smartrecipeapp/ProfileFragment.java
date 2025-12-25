@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -109,16 +110,32 @@ public class ProfileFragment extends Fragment {
         String uid = mAuth.getUid();
         if (uid == null) return;
 
-        // 1. Đếm số bài viết (Tổng các bài của user)
-        db.collection("recipes").whereEqualTo("authorId", uid)
-                .whereEqualTo("status", "approved")                .addSnapshotListener((snapshots, e) -> {
-                    if (snapshots != null) {
-                        tvPostCount.setText(String.valueOf(snapshots.size()));
+        // 1. Đếm số bài viết (Vẫn lấy tất cả để hiển thị list, nhưng chỉ đếm bài approved)
+        db.collection("recipes")
+                .whereEqualTo("authorId", uid)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) return;
 
-                        // Cập nhật list cho RecyclerView luôn ở đây nếu muốn realtime
-                        myRecipeList.clear();
-                        myRecipeList.addAll(snapshots.toObjects(MonAn.class));
-                        adapter.notifyDataSetChanged();
+                    myRecipeList.clear();
+                    int approvedCount = 0; // Biến đếm riêng cho bài đã duyệt
+
+                    if (value != null) {
+                        for (DocumentSnapshot doc : value.getDocuments()) {
+                            MonAn mon = doc.toObject(MonAn.class);
+                            mon.setId(doc.getId());
+
+                            // 1. Vẫn thêm vào list để hiển thị (bao gồm cả pending/rejected)
+                            myRecipeList.add(mon);
+
+                            // 2. Logic đếm: Chỉ tăng biến đếm nếu status là "approved"
+                            if ("approved".equals(mon.getStatus())) {
+                                approvedCount++;
+                            }
+                        }
+
+                        // 3. Cập nhật giao diện
+                        tvPostCount.setText(String.valueOf(approvedCount)); // Hiển thị số bài đã duyệt
+                        adapter.notifyDataSetChanged(); // Hiển thị danh sách toàn bộ
                     }
                 });
 

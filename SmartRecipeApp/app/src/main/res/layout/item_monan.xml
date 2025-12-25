@@ -32,7 +32,8 @@
             android:backgroundTint="#FFFFFF"
             android:src="@drawable/ic_heart_outline"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/tvRecipeName"

@@ -16,7 +16,7 @@ public class MonAn implements Serializable {
     private String authorId;        // UID người đăng
     private String authorName;      // Tên người đăng
     private String status;          // "pending" (chờ), "approved" (duyệt), "rejected" (hủy)
-    private int likeCount;          // Số lượt thích
+    private int likeCount = 0;          // Số lượt thích
     private List<String> likedBy;// Danh sách UID những người đã like
     private long createdAt;
 
