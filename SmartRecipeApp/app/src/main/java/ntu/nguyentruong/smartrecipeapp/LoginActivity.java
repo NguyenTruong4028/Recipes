@@ -77,18 +77,14 @@ public class LoginActivity extends AppCompatActivity {
                         User user = documentSnapshot.toObject(User.class);
 
                         if (user != null) {
-                            if ("admin".equals(user.getRole())) {
-                                // -> Chuyển sang màn hình ADMIN (Bạn chưa có thì cứ Toast lên đã)
-                                Toast.makeText(this, "Xin chào Admin " + user.getFullName(), Toast.LENGTH_LONG).show();
-                                // startActivity(new Intent(this, AdminActivity.class));
-                            } else {
+
                                 // -> Chuyển sang màn hình USER (Trang chủ)
                                 Toast.makeText(this, "Xin chào " + user.getFullName(), Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(this, MainActivity.class));
                             }
                             finish();
-                        }
                     }
+
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Lỗi lấy dữ liệu user!", Toast.LENGTH_SHORT).show();
