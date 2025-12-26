@@ -44,7 +44,7 @@ public class ListRecipesAdapter extends RecyclerView.Adapter<ListRecipesAdapter.
         holder.tvName.setText(mon.getTenMon());
         holder.tvTime.setText(mon.getThoiGian());
         holder.tvDifficulty.setText(mon.getDoKho());
-        holder.tvlikeCount.setText(mon.getLikeCount() +  " lượt thích");
+        holder.tvlikeCount.setText(mon.getLikeCount() +  " ❤️");
 
         Glide.with(context).load(mon.getHinhAnh()).into(holder.imgFood);
 

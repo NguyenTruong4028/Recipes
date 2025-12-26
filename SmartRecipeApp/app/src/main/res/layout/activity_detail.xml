@@ -110,6 +110,17 @@
                     android:background="#F5F5F5"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="6dp"/>
+                <TextView
+                    android:id="@+id/tvDetailDifficulty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⭐ Dễ"
+                    android:textColor="#FF9800"
+                    android:textStyle="bold"
+                    android:background="#FFF3E0"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:layout_marginStart="12dp"/>
             </LinearLayout>
 
             <TextView

@@ -61,6 +61,7 @@
                     app:tint="#FF5252"/>
 
                 <TextView
+                    android:id="@+id/tvPlaceholder"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Thêm ảnh"
@@ -90,6 +91,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:layout_marginTop="8dp"
             android:baselineAligned="false">
 
             <LinearLayout
@@ -97,14 +99,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginEnd="8dp">
-                <TextView style="@style/LabelStyle"
-                    android:text="Thời gian nấu (phút)"/>
+                android:layout_marginEnd="4dp"
+                >
+                <TextView style="@style/LabelStyle" android:text="Thời gian (phút)"/>
                 <EditText
+                    android:background="@drawable/bg_rounded_pink"
                     android:id="@+id/edtTime"
                     style="@style/InputStyle"
                     android:inputType="number"
-                    android:hint="30"/>
+                    android:hint="30"
+                    />
             </LinearLayout>
 
             <LinearLayout
@@ -112,53 +116,45 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginStart="8dp">
-                <TextView style="@style/LabelStyle"
-                    android:text="Số người ăn"/>
+                android:layout_marginHorizontal="4dp">
+                <TextView style="@style/LabelStyle" android:text="Khẩu phần"/>
                 <EditText
+                    android:background="@drawable/bg_rounded_pink"
                     android:id="@+id/edtServes"
                     style="@style/InputStyle"
                     android:inputType="number"
-                    android:hint="2"/>
+                    android:hint="2 người"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="4dp">
+                <TextView style="@style/LabelStyle" android:text="Độ khó"/>
+                <Spinner
+                    android:id="@+id/spinnerDifficulty"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_spinner_custom"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="40dp"
+                    android:overlapAnchor="false"
+                    android:spinnerMode="dropdown"/>
             </LinearLayout>
         </LinearLayout>
 
         <TextView
             style="@style/LabelStyle"
             android:text="Nguyên liệu"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="16dp"/>
 
         <LinearLayout
             android:id="@+id/layoutIngredientsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp">
-
-                <EditText
-                    android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_rounded_pink"
-                    android:hint="Gà"
-                    android:paddingHorizontal="16dp"
-                    android:textSize="14sp"/>
-
-                <EditText
-                    android:layout_width="100dp"
-                    android:layout_height="50dp"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_rounded_pink"
-                    android:hint="Sả"
-                    android:paddingHorizontal="16dp"
-                    android:textSize="14sp"/>
-            </LinearLayout>
-        </LinearLayout>
+            android:orientation="vertical"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddIngredientLine"
@@ -169,7 +165,6 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_gravity="start"/>
 
-
         <TextView
             style="@style/LabelStyle"
             android:text="Cách nấu"
@@ -179,33 +174,7 @@
             android:id="@+id/layoutStepsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:layout_width="30dp"
-                    android:layout_height="50dp"
-                    android:text="1"
-                    android:gravity="center"
-                    android:textStyle="bold"
-                    android:textColor="#FF5252"/>
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="50dp"
-                    android:background="@drawable/bg_rounded_pink"
-                    android:hint="Mô tả bước 1"
-                    android:padding="16dp"
-                    android:textSize="14sp"
-                    android:gravity="top|start"/>
-            </LinearLayout>
-        </LinearLayout>
+            android:orientation="vertical"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddStepLine"

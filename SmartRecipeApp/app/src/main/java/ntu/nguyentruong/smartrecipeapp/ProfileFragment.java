@@ -2,6 +2,7 @@ package ntu.nguyentruong.smartrecipeapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,6 +58,7 @@ public class ProfileFragment extends Fragment {
         loadUserStats(); // Hàm mới để load các con số
 
         setupEvents();
+
         return view;
     }
 
@@ -152,12 +154,19 @@ public class ProfileFragment extends Fragment {
                 });
 
         // 3. Đếm số Yêu thích
-        // Giả sử bạn có collection "favorites" lưu { userId: "...", recipeId: "..." }
         db.collection("favorites")
-                .whereEqualTo("userId", uid)
+                .whereEqualTo("userId", uid) // Chỉ lấy những món CỦA TÔI thích
                 .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Log.w("Firestore", "Listen failed.", e);
+                        return; // Thoát nếu lỗi kết nối
+                    }
+
+
                     if (snapshots != null) {
-                        tvLikeCount.setText(String.valueOf(snapshots.size()));
+                        // Lấy kích thước danh sách trả về = số lượng yêu thích
+                        int count = snapshots.size();
+                        tvLikeCount.setText(String.valueOf(count));
                     } else {
                         tvLikeCount.setText("0");
                     }

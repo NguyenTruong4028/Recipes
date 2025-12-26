@@ -29,7 +29,7 @@ import java.util.List;
 
 public class DetailActivity extends AppCompatActivity {
     private ImageView imgDetailFood;
-    private TextView tvDetailName, tvDetailTime,tvDetailServe,tvLikeCount;
+    private TextView tvDetailName, tvDetailTime,tvDetailServe,tvLikeCount, tvDetailDifficulty;
     private LinearLayout layoutIngredientsList, layoutStepsList;
     private ImageButton btnBackDetail, btnSaveFavorite;
     private MonAn monAnHienTai;
@@ -63,6 +63,7 @@ public class DetailActivity extends AppCompatActivity {
         tvDetailTime = findViewById(R.id.tvDetailTime);
         tvDetailServe = findViewById(R.id.tvDetailServe);
         tvLikeCount = findViewById(R.id.tvLikeCount);
+        tvDetailDifficulty = findViewById(R.id.tvDetailDifficulty);
 
         layoutIngredientsList = findViewById(R.id.layoutIngredientsList);
         layoutStepsList = findViewById(R.id.layoutStepsList);
@@ -82,10 +83,27 @@ public class DetailActivity extends AppCompatActivity {
         // 1. Hiển thị thông tin cơ bản
         tvDetailName.setText(monAnHienTai.getTenMon());
         tvDetailTime.setText("⏱ " + monAnHienTai.getThoiGian());
-        updateLikeCountUI(monAnHienTai.getLikeCount());
         if(tvDetailServe != null) {
             tvDetailServe.setText("👥 " + monAnHienTai.getKhauPhan());
         }
+        String doKho = monAnHienTai.getDoKho();
+        if (doKho != null && !doKho.isEmpty()) {
+            tvDetailDifficulty.setText("⭐ " + doKho);
+            tvDetailDifficulty.setVisibility(View.VISIBLE);
+
+            // (Tùy chọn) Đổi màu chữ theo độ khó cho đẹp
+            if (doKho.equals("Khó")) {
+                tvDetailDifficulty.setTextColor(android.graphics.Color.RED);
+            } else if (doKho.equals("Trung bình")) {
+                tvDetailDifficulty.setTextColor(android.graphics.Color.parseColor("#FF9800")); // Màu Cam
+            } else {
+                tvDetailDifficulty.setTextColor(android.graphics.Color.parseColor("#4CAF50")); // Màu Xanh lá
+            }
+        } else {
+            // Nếu dữ liệu cũ không có độ khó thì ẩn đi
+            tvDetailDifficulty.setVisibility(View.GONE);
+        }
+        updateLikeCountUI(monAnHienTai.getLikeCount());
 
         // 2. Load ảnh từ URL bằng Glide
         Glide.with(this)
@@ -166,6 +184,7 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+
     private void updateFavoriteToFirestore(boolean isAdding) {
         String myUid = currentUser.getUid();
         String docId = monAnHienTai.getId();
@@ -175,26 +194,42 @@ public class DetailActivity extends AppCompatActivity {
             return;
         }
 
-        DocumentReference docRef = db.collection("recipes").document(docId);
+        // 1. Tham chiếu đến món ăn trong collection "recipes"
+        DocumentReference recipeRef = db.collection("recipes").document(docId);
+
+        // 2. Tham chiếu đến bảng "favorites" (để Profile có cái mà đếm)
+        // Tạo ID duy nhất: uid_recipeId
+        String favoriteDocId = myUid + "_" + docId;
+        DocumentReference favRef = db.collection("favorites").document(favoriteDocId);
 
         if (isAdding) {
-            // 1. Thêm UID vào mảng likedBy
-            // 2. Tăng likeCount lên 1
-            docRef.update("likedBy", FieldValue.arrayUnion(myUid),
-                            "likeCount", FieldValue.increment(1))
+            // --- TRƯỜNG HỢP THÍCH ---
+
+            // A. Cập nhật bảng Recipes (tăng likeCount, thêm uid vào mảng)
+            recipeRef.update("likedBy", FieldValue.arrayUnion(myUid),
+                    "likeCount", FieldValue.increment(1));
+
+            // B. Tạo dữ liệu mới trong bảng Favorites
+            java.util.Map<String, Object> favData = new java.util.HashMap<>();
+            favData.put("userId", myUid);
+            favData.put("recipeId", docId);
+            favData.put("timestamp", FieldValue.serverTimestamp());
+
+            favRef.set(favData)
                     .addOnFailureListener(e -> {
-                        // Nếu lỗi thì hoàn tác lại UI
-                        updateUIButton(false);
-                        isLiked = false;
-                        Toast.makeText(this, "Lỗi kết nối: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        // Xử lý lỗi nếu cần
+                        Log.e("FAV_ERROR", "Không lưu được vào favorites: " + e.getMessage());
                     });
+
         } else {
-            docRef.update("likedBy", FieldValue.arrayRemove(myUid),
-                            "likeCount", FieldValue.increment(-1))
-                    .addOnFailureListener(e -> {
-                        updateUIButton(true);
-                        isLiked = true;
-                    });
+            // --- TRƯỜNG HỢP BỎ THÍCH ---
+
+            // A. Cập nhật bảng Recipes (giảm likeCount, xóa uid khỏi mảng)
+            recipeRef.update("likedBy", FieldValue.arrayRemove(myUid),
+                    "likeCount", FieldValue.increment(-1));
+
+            // B. Xóa dữ liệu khỏi bảng Favorites
+            favRef.delete();
         }
     }
     private void checkFavoriteStatus() {
