@@ -49,7 +49,7 @@
             android:id="@+id/tvAuthorTime"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Đăng bởi: Serein • 10:30 AM"
+            android:text="Đăng bởi: Serein"
             android:textSize="12sp"
             android:textColor="#888888"
             android:layout_marginTop="4dp"

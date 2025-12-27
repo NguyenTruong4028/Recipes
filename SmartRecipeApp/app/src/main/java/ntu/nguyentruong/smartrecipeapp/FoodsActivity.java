@@ -33,7 +33,7 @@ public class FoodsActivity extends AppCompatActivity {
 
         // 2. Ánh xạ View
         recyclerView = findViewById(R.id.recyclerRecipes);
-        tvResultCount = findViewById(R.id.tvResultCount); // Ánh xạ TextView đếm số
+        tvResultCount = findViewById(R.id.tvResultCount);
         btnBack = findViewById(R.id.btnBack);
 
         // 3. Setup RecyclerView
@@ -51,7 +51,6 @@ public class FoodsActivity extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         tvResultCount.setText("Đang tìm kiếm món ngon...");
 
-        // SỬA LẠI KHÚC NÀY:
         // Chỉ lấy những món có status là "approved"
         db.collection("recipes")
                 .whereEqualTo("status", "approved")

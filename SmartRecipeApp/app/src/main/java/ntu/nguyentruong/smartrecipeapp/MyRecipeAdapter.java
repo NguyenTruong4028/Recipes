@@ -34,7 +34,6 @@ public class MyRecipeAdapter extends RecyclerView.Adapter<MyRecipeAdapter.MyReci
     @NonNull
     @Override
     public MyRecipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Lưu ý: Đảm bảo layout item_mini (hoặc item_recipe) đã có 2 nút btnEdit và btnDelete
         View view = LayoutInflater.from(context).inflate(R.layout.item_mini, parent, false);
         return new MyRecipeViewHolder(view);
     }
@@ -75,7 +74,7 @@ public class MyRecipeAdapter extends RecyclerView.Adapter<MyRecipeAdapter.MyReci
         // A. Nhấn vào cả dòng -> Xem chi tiết (DetailActivity)
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, DetailActivity.class);
-            // Gửi dữ liệu sang trang chi tiết (Kiểm tra DetailActivity của bạn nhận key là gì nhé)
+            // Gửi dữ liệu sang trang chi tiết
             intent.putExtra("object_monan", monAn);
             context.startActivity(intent);
         });
@@ -101,7 +100,6 @@ public class MyRecipeAdapter extends RecyclerView.Adapter<MyRecipeAdapter.MyReci
         });
         holder.tvLikeCount.setText(monAn.getLikeCount() + " ❤️");
 
-        // Vì đây là Adapter của "Bài viết của tôi", nên luôn hiện nút sửa xóa
         if (holder.layoutActionButtons != null) {
             holder.layoutActionButtons.setVisibility(View.VISIBLE);
         }
@@ -126,12 +124,11 @@ public class MyRecipeAdapter extends RecyclerView.Adapter<MyRecipeAdapter.MyReci
         return monAnList.size();
     }
 
-    // --- ViewHolder ---
     public static class MyRecipeViewHolder extends RecyclerView.ViewHolder {
         ImageView imgFood;
         TextView tvFoodName, tvStatus,tvLikeCount;
-        ImageButton btnEdit, btnDelete; // Thêm 2 nút
-        LinearLayout layoutActionButtons; // Layout chứa 2 nút
+        ImageButton btnEdit, btnDelete;
+        LinearLayout layoutActionButtons;
 
         public MyRecipeViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -139,9 +136,6 @@ public class MyRecipeAdapter extends RecyclerView.Adapter<MyRecipeAdapter.MyReci
             tvFoodName = itemView.findViewById(R.id.tvFoodName);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
-
-
-            // Ánh xạ các nút mới thêm trong item_mini.xml
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
             layoutActionButtons = itemView.findViewById(R.id.layoutActionButtons);

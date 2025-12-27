@@ -18,7 +18,6 @@ public class MonAn implements Serializable {
     private String status;          // "pending" (chờ), "approved" (duyệt), "rejected" (hủy)
     private int likeCount = 0;          // Số lượt thích
     private List<String> likedBy;// Danh sách UID những người đã like
-    private long createdAt;
 
     public MonAn() {}
 
@@ -36,7 +35,6 @@ public class MonAn implements Serializable {
         this.status = status;
         this.likeCount = likeCount;
         this.likedBy = likedBy;
-        this.createdAt = createdAt;
     }
 
     public MonAn(String id, String tenMon, String hinhAnh, String thoiGian, String khauPhan, String doKho, List<String> nguyenLieu, List<String> cachLam, String authorId, String authorName, String status, int likeCount, List<String> likedBy) {
@@ -53,16 +51,9 @@ public class MonAn implements Serializable {
         this.status = "pending";
         this.likeCount = 0;
         this.likedBy = new ArrayList<>();
-        this.createdAt = System.currentTimeMillis();
+
     }
 
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
 
     public String getId() {
         return id;

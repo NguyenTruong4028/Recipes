@@ -39,14 +39,14 @@ public class MainActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         initViews();
+        //DataSeeder.seedRecipes(this); (nạp dữ liệu)
         loadPendingRecipes();
+
     }
 
     private void initViews() {
         recyclerView = findViewById(R.id.recyclerPending);
         btnRefresh = findViewById(R.id.btnRefresh);
-
-        // Ánh xạ mới
         tvEmptyState = findViewById(R.id.tvEmptyState);
         progressBar = findViewById(R.id.progressBar);
 
@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
                     pendingList.clear();
 
                     if (value != null && !value.isEmpty()) {
-                        // --- TRƯỜNG HỢP CÓ BÀI ---
                         for (DocumentSnapshot doc : value.getDocuments()) {
                             MonAn mon = doc.toObject(MonAn.class);
                             if (mon != null) {
@@ -88,20 +87,18 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
 
-                        // HIỆN RecyclerView, ẨN thông báo rỗng
                         recyclerView.setVisibility(android.view.View.VISIBLE);
                         tvEmptyState.setVisibility(android.view.View.GONE);
 
                     } else {
-                        // --- TRƯỜNG HỢP KHÔNG CÓ BÀI ---
-                        // ẨN RecyclerView, HIỆN thông báo rỗng
+
                         recyclerView.setVisibility(android.view.View.GONE);
                         tvEmptyState.setVisibility(android.view.View.VISIBLE);
 
-                        // TUYỆT ĐỐI KHÔNG DÙNG TOAST Ở ĐÂY
                     }
 
                     adapter.notifyDataSetChanged();
                 });
     }
+
 }

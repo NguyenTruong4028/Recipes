@@ -110,8 +110,7 @@
                 android:layout_margin="5dp"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                app:layout_constraintEnd_toStartOf="@+id/btnFavorite"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintEnd_toStartOf="@+id/btnFavorite" />
         </LinearLayout>
 
         <TextView

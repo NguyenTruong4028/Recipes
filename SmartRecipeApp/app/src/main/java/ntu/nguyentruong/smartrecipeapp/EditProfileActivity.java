@@ -60,15 +60,14 @@ public class EditProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
-
-        initCloudinary(); // Cấu hình giống AddFoodsActivity2
+        initCloudinary();
         initViews();
         initFirebase();
         loadCurrentInfo();
         handleEvents();
     }
 
-    // 1. Cấu hình Cloudinary (Copy từ AddFoodsActivity2)
+    // 1. Cấu hình Cloudinary
     private void initCloudinary() {
         try {
             MediaManager.get();
@@ -90,7 +89,7 @@ public class EditProfileActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSaveProfile);
         btnBack = findViewById(R.id.btnBack);
 
-        edtEmail.setEnabled(false); // Không cho sửa email
+        edtEmail.setEnabled(false);
     }
 
     private void initFirebase() {
@@ -142,12 +141,11 @@ public class EditProfileActivity extends AppCompatActivity {
         });
     }
 
-    // 2. Hàm nén ảnh (Copy từ AddFoodsActivity2)
+    // 2. Hàm nén ảnh
     private byte[] compressImage(Uri imageUri) {
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            // Nén ảnh JPEG chất lượng 70%
             bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
             return stream.toByteArray();
         } catch (IOException e) { return null; }
@@ -164,12 +162,10 @@ public class EditProfileActivity extends AppCompatActivity {
 
         if (data != null) {
             MediaManager.get().upload(data)
-                    // Không cần .unsigned() nữa vì đã có api_key/secret trong config
                     .callback(new UploadCallback() {
                         @Override
                         public void onSuccess(String requestId, Map resultData) {
                             progressDialog.dismiss();
-                            // Lấy URL ảnh mới
                             String newAvatarUrl = (String) resultData.get("secure_url");
                             saveProfileToFirestore(newAvatarUrl);
                         }
@@ -208,7 +204,7 @@ public class EditProfileActivity extends AppCompatActivity {
         db.collection("users").document(uid).update(updates)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK); // Báo cho màn hình Profile cập nhật lại
+                    setResult(RESULT_OK);
                     finish();
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Lỗi Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show());

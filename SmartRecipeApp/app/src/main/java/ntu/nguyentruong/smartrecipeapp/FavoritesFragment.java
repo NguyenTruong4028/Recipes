@@ -37,7 +37,7 @@ public class FavoritesFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         return inflater.inflate(R.layout.fragment_favorites, container, false);
     }
     @Override
@@ -70,12 +70,6 @@ public class FavoritesFragment extends Fragment {
     }
 
     private void loadFavoriteRecipes() {
-        if (currentUser == null) {
-            tvEmptyFavorites.setVisibility(View.VISIBLE);
-            tvEmptyFavorites.setText("Vui lòng đăng nhập để xem danh sách yêu thích");
-            return;
-        }
-
         String currentUserId = currentUser.getUid();
 
         db.collection("recipes")

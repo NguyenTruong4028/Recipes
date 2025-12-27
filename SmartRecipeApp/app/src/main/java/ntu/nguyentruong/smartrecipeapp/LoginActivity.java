@@ -30,12 +30,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-
-
-        edtEmail = findViewById(R.id.edtEmail);
-        edtPassword = findViewById(R.id.edtPassword);
-        btnLogin = findViewById(R.id.btnLogin);
-        btnSignUp = findViewById(R.id.btnSignUp);
+        initViews();
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,6 +43,12 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
             }
         });
+    }
+    private void initViews() {
+        edtEmail = findViewById(R.id.edtEmail);
+        edtPassword = findViewById(R.id.edtPassword);
+        btnLogin = findViewById(R.id.btnLogin);
+        btnSignUp = findViewById(R.id.btnSignUp);
     }
     private void loginUser() {
         String email = edtEmail.getText().toString().trim();
@@ -62,14 +63,14 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         // Đăng nhập Auth thành công -> Kiểm tra Role trong Firestore
-                        checkUserRole(mAuth.getCurrentUser().getUid());
+                        checkUser(mAuth.getCurrentUser().getUid());
                     } else {
                         Toast.makeText(this, "Đăng nhập thất bại!", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    private void checkUserRole(String uid) {
+    private void checkUser(String uid) {
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
@@ -77,8 +78,6 @@ public class LoginActivity extends AppCompatActivity {
                         User user = documentSnapshot.toObject(User.class);
 
                         if (user != null) {
-
-                                // -> Chuyển sang màn hình USER (Trang chủ)
                                 Toast.makeText(this, "Xin chào " + user.getFullName(), Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(this, MainActivity.class));
                             }

@@ -34,15 +34,10 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // Khởi tạo Firebase
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        initViews();
 
-        edtEmail = findViewById(R.id.edtEmail);
-        edtPassword = findViewById(R.id.edtPassword);
-        edtFullName = findViewById(R.id.edtfullname);
-        edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
-        btnSignUp = findViewById(R.id.btnSignUp);
 
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,6 +47,13 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    private void initViews() {
+        edtEmail = findViewById(R.id.edtEmail);
+        edtPassword = findViewById(R.id.edtPassword);
+        edtFullName = findViewById(R.id.edtfullname);
+        edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
+        btnSignUp = findViewById(R.id.btnSignUp);
+    }
     private void registerUser() {
         String email = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
@@ -65,7 +67,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
         if (!password.equals(confirmPassword)) {
             Toast.makeText(this, "Mật khẩu nhập lại không khớp!", Toast.LENGTH_SHORT).show();
-            return; // Dừng lại, không gửi lên Firebase
+            return;
         }
 
         // 2. Tạo tài khoản trên Firebase Auth
@@ -98,26 +100,24 @@ public class RegisterActivity extends AppCompatActivity {
         // 1. Khởi tạo Dialog
         Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // Bỏ tiêu đề mặc định
-        dialog.setContentView(R.layout.signup_success); // <-- Thay tên file XML dialog của bạn vào đây
-        dialog.setCancelable(false); // Ngăn người dùng bấm ra ngoài để tắt (bắt buộc phải bấm nút)
+        dialog.setContentView(R.layout.signup_success); // Thay tên file XML dialog
+        dialog.setCancelable(false); // Ngăn người dùng bấm ra ngoài để tắt
 
-        // Làm nền dialog trong suốt (để bo góc đẹp hơn nếu file XML của bạn có bo góc)
+        // Làm nền dialog trong suốt
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
 
         // 2. Ánh xạ nút bấm trong Dialog (Ví dụ nút "Đăng nhập ngay")
-        // Lưu ý: Phải dùng dialog.findViewById chứ không phải findViewById thường
-        Button btnGoLogin = dialog.findViewById(R.id.btnGoToLogin); // <-- Thay ID nút của bạn vào đây
+        Button btnGoLogin = dialog.findViewById(R.id.btnGoToLogin);
 
         // 3. Xử lý sự kiện bấm nút
         btnGoLogin.setOnClickListener(v -> {
-            dialog.dismiss(); // Tắt dialog
-
+            dialog.dismiss();
             // Chuyển về màn hình Đăng nhập
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
-            finish(); // Đóng màn hình Đăng ký lại để người dùng không back lại được
+            finish();
         });
 
         // 4. Hiển thị

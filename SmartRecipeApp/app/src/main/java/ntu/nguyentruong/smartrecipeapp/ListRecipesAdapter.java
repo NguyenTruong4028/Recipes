@@ -70,14 +70,14 @@ public class ListRecipesAdapter extends RecyclerView.Adapter<ListRecipesAdapter.
             MonAn monAnClick = listMonAn.get(position);
 
             Intent intent = new Intent(context, DetailActivity.class);
-            // Truyền cả object MonAn sang (Nhờ implements Serializable)
+            // Truyền cả object MonAn sang
             intent.putExtra("object_monan", monAnClick);
             context.startActivity(intent);
         });
         if (missingItems.isEmpty()) {
             holder.tvMissing.setText("Đủ nguyên liệu! Nấu ngay!");
             holder.tvMissing.setTextColor(context.getResources().getColor(android.R.color.holo_green_dark));
-            holder.tvMissing.setBackgroundColor(0x154CAF50); // Màu xanh nhạt
+            holder.tvMissing.setBackgroundColor(0x154CAF50);
         } else {
             String text = "Thiếu: " + String.join(", ", missingItems);
             holder.tvMissing.setText(text);

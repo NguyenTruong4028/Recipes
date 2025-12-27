@@ -31,8 +31,8 @@ public class ProfileFragment extends Fragment {
 
     // View
     private ImageView imgAvatar;
-    private TextView tvUserName, tvUserEmail, tvUserBio; // Thêm Bio
-    private TextView tvPostCount, tvLikeCount, tvPendingCount; // Đổi Plan -> Pending
+    private TextView tvUserName, tvUserEmail, tvUserBio;
+    private TextView tvPostCount, tvLikeCount, tvPendingCount;
     private TextView btnCreateNewRecipe, btnEditProfile;
     private MaterialButton btnLogout;
     private RecyclerView recyclerMyRecipes;
@@ -53,9 +53,8 @@ public class ProfileFragment extends Fragment {
         initViews(view);
         setupMyRecipesRecycler();
 
-        // Load Data
         loadUserProfile();
-        loadUserStats(); // Hàm mới để load các con số
+        loadUserStats();
 
         setupEvents();
 
@@ -66,11 +65,11 @@ public class ProfileFragment extends Fragment {
         imgAvatar = view.findViewById(R.id.imgAvatar);
         tvUserName = view.findViewById(R.id.tvUserName);
         tvUserEmail = view.findViewById(R.id.tvUserEmail);
-        tvUserBio = view.findViewById(R.id.tvUserBio); // Ánh xạ Bio
+        tvUserBio = view.findViewById(R.id.tvUserBio);
 
         tvPostCount = view.findViewById(R.id.tvPostCount);
         tvLikeCount = view.findViewById(R.id.tvLikeCount);
-        tvPendingCount = view.findViewById(R.id.tvPendingCount); // Ánh xạ Pending
+        tvPendingCount = view.findViewById(R.id.tvPendingCount);
 
         btnCreateNewRecipe = view.findViewById(R.id.btnCreateNewRecipe);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
@@ -79,7 +78,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupEvents() {
-        // 1. Xử lý Đăng xuất có xác nhận (Alert Dialog)
+        // 1. Xử lý Đăng xuất có xác nhận
         btnLogout.setOnClickListener(v -> showLogoutDialog());
 
         // 2. Chuyển sang trang tạo món
@@ -93,7 +92,7 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    // --- LOGIC DIALOG ĐĂNG XUẤT ---
+    // --- ĐĂNG XUẤT ---
     private void showLogoutDialog() {
         new android.app.AlertDialog.Builder(getContext())
                 .setTitle("Đăng xuất")
@@ -108,12 +107,12 @@ public class ProfileFragment extends Fragment {
                 .show();
     }
 
-    // --- LOGIC LOAD SỐ LIỆU ---
+    // --- LOAD SỐ LIỆU ---
     private void loadUserStats() {
         String uid = mAuth.getUid();
         if (uid == null) return;
 
-        // 1. Đếm số bài viết (Vẫn lấy tất cả để hiển thị list, nhưng chỉ đếm bài approved)
+        // 1. Đếm số bài viết (chỉ đếm bài approved)
         db.collection("recipes")
                 .whereEqualTo("authorId", uid)
                 .orderBy("likeCount", Query.Direction.DESCENDING)
@@ -121,14 +120,13 @@ public class ProfileFragment extends Fragment {
                     if (error != null) return;
 
                     myRecipeList.clear();
-                    int approvedCount = 0; // Biến đếm riêng cho bài đã duyệt
+                    int approvedCount = 0;
 
                     if (value != null) {
                         for (DocumentSnapshot doc : value.getDocuments()) {
                             MonAn mon = doc.toObject(MonAn.class);
                             mon.setId(doc.getId());
-
-                            // 1. Vẫn thêm vào list để hiển thị (bao gồm cả pending/rejected)
+                            // 1. Thêm vào list để hiển thị (bao gồm cả pending/rejected)
                             myRecipeList.add(mon);
 
                             // 2. Logic đếm: Chỉ tăng biến đếm nếu status là "approved"
@@ -155,16 +153,15 @@ public class ProfileFragment extends Fragment {
 
         // 3. Đếm số Yêu thích
         db.collection("favorites")
-                .whereEqualTo("userId", uid) // Chỉ lấy những món CỦA TÔI thích
+                .whereEqualTo("userId", uid)
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
                         Log.w("Firestore", "Listen failed.", e);
-                        return; // Thoát nếu lỗi kết nối
+                        return;
                     }
 
 
                     if (snapshots != null) {
-                        // Lấy kích thước danh sách trả về = số lượng yêu thích
                         int count = snapshots.size();
                         tvLikeCount.setText(String.valueOf(count));
                     } else {
@@ -176,7 +173,6 @@ public class ProfileFragment extends Fragment {
     private void loadUserProfile() {
         String uid = mAuth.getUid();
         if (uid == null) return;
-
         // Dùng addSnapshotListener để khi sửa profile xong quay lại nó tự cập nhật
         db.collection("users").document(uid)
                 .addSnapshotListener((documentSnapshot, e) -> {
@@ -186,7 +182,6 @@ public class ProfileFragment extends Fragment {
                             tvUserName.setText(user.getFullName());
                             tvUserEmail.setText(user.getEmail());
 
-                            // Hiển thị Bio
                             if (user.getBio() != null && !user.getBio().isEmpty()) {
                                 tvUserBio.setText(user.getBio());
                             } else {

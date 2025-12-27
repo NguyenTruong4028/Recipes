@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
-        // Mặc định khi vào App thì hiện trang Home
+        // Mặc định khi vào App thì hiện trang Fridge
         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new FridgeFragment()).commit();
 
         // Bắt sự kiện click vào menu

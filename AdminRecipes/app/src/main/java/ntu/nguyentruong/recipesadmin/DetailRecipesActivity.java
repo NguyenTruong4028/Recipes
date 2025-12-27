@@ -1,7 +1,10 @@
 package ntu.nguyentruong.recipesadmin;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,11 +17,14 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.List;
+
 public class DetailRecipesActivity extends AppCompatActivity {
 
     private ImageView imgDetail;
-    private TextView tvName, tvInfo, tvIngredients, tvSteps;
+    private TextView tvName, tvIngredients, tvDetailTime,tvDetailServe,tvDetailDifficulty;
     private MaterialButton btnApprove, btnReject;
+    private LinearLayout  layoutStepsList;
 
     private FirebaseFirestore db;
     private String recipeId;
@@ -39,11 +45,13 @@ public class DetailRecipesActivity extends AppCompatActivity {
     private void initViews() {
         imgDetail = findViewById(R.id.imgDetailFood);
         tvName = findViewById(R.id.tvDetailName);
-        tvInfo = findViewById(R.id.tvDetailInfo);
         tvIngredients = findViewById(R.id.tvIngredientsList);
-        tvSteps = findViewById(R.id.tvStepsList);
         btnApprove = findViewById(R.id.btnApprove);
         btnReject = findViewById(R.id.btnReject);
+        tvDetailTime = findViewById(R.id.tvDetailTime);
+        tvDetailServe = findViewById(R.id.tvDetailServe);
+        tvDetailDifficulty = findViewById(R.id.tvDetailDifficulty);
+        layoutStepsList = findViewById(R.id.layoutStepsList);
     }
 
     private void loadData() {
@@ -54,7 +62,24 @@ public class DetailRecipesActivity extends AppCompatActivity {
                     MonAn mon = document.toObject(MonAn.class);
                     if (mon != null) {
                         tvName.setText(mon.getTenMon());
-                        tvInfo.setText(mon.getThoiGian() + " • " + mon.getKhauPhan());
+                        tvDetailTime.setText("⏱ " + mon.getThoiGian());
+                        if(tvDetailServe != null) {
+                            tvDetailServe.setText("👥 " + mon.getKhauPhan());
+                        }
+                        String doKho = mon.getDoKho();
+                        if (doKho != null && !doKho.isEmpty()) {
+                            tvDetailDifficulty.setText("⭐ " + doKho);
+                            tvDetailDifficulty.setVisibility(View.VISIBLE);
+
+                            // Đổi màu chữ theo độ khó
+                            if (doKho.equals("Khó")) {
+                                tvDetailDifficulty.setTextColor(android.graphics.Color.RED);
+                            } else if (doKho.equals("Trung bình")) {
+                                tvDetailDifficulty.setTextColor(android.graphics.Color.parseColor("#FF9800")); // Màu Cam
+                            } else {
+                                tvDetailDifficulty.setTextColor(android.graphics.Color.parseColor("#4CAF50")); // Màu Xanh lá
+                            }
+                        }
 
                         Glide.with(this).load(mon.getHinhAnh()).into(imgDetail);
 
@@ -67,16 +92,25 @@ public class DetailRecipesActivity extends AppCompatActivity {
                         }
                         tvIngredients.setText(ingBuilder.toString());
 
-                        // Hiển thị danh sách các bước
-                        StringBuilder stepBuilder = new StringBuilder();
-                        if (mon.getCachLam() != null) {
-                            int count = 1;
-                            for (String step : mon.getCachLam()) {
-                                stepBuilder.append("Bước ").append(count++).append(": ")
-                                        .append(step).append("\n\n");
+                        layoutStepsList.removeAllViews();
+                        List<String> cachLams = mon.getCachLam();
+                        LayoutInflater inflater = LayoutInflater.from(this);
+
+                        if (cachLams != null) {
+                            for (int i = 0; i < cachLams.size(); i++) {
+                                // Inflate layout con
+                                View stepView = inflater.inflate(R.layout.item_step_food, layoutStepsList, false);
+
+                                TextView tvNum = stepView.findViewById(R.id.tvStepNumber);
+                                TextView tvContent = stepView.findViewById(R.id.tvStepContent);
+
+                                tvNum.setText(String.valueOf(i + 1));
+                                tvContent.setText(cachLams.get(i));
+
+                                layoutStepsList.addView(stepView);
                             }
                         }
-                        tvSteps.setText(stepBuilder.toString());
+
                     }
                 });
     }
@@ -89,7 +123,7 @@ public class DetailRecipesActivity extends AppCompatActivity {
                     .update("status", "approved")
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(this, "Đã duyệt bài!", Toast.LENGTH_SHORT).show();
-                        finish(); // Quay lại dashboard
+                        finish();
                     })
                     .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
@@ -97,7 +131,7 @@ public class DetailRecipesActivity extends AppCompatActivity {
         // Nút Từ chối
         btnReject.setOnClickListener(v -> {
             db.collection("recipes").document(recipeId)
-                    .update("status", "rejected") // Hoặc dùng .delete() nếu muốn xóa luôn
+                    .update("status", "rejected")
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(this, "Đã từ chối bài viết!", Toast.LENGTH_SHORT).show();
                         finish();

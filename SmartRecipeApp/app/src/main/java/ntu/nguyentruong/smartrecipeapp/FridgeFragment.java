@@ -25,9 +25,8 @@ public class FridgeFragment extends Fragment {
     private ArrayList<String> myIngredients = new ArrayList<>();
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         View view = inflater.inflate(R.layout.fragment_fridge, container, false);
         edtNguyenLieu = view.findViewById(R.id.edtNguyenLieu);
         btnAdd = view.findViewById(R.id.btnAddIngredient);
@@ -56,7 +55,7 @@ public class FridgeFragment extends Fragment {
         return view;
     }
     private void addChip(String text) {
-        myIngredients.add(text); // Lưu vào list logic
+        myIngredients.add(text);
 
         // Tạo Chip giao diện
         Chip chip = new Chip(getContext());
@@ -64,7 +63,7 @@ public class FridgeFragment extends Fragment {
         chip.setCloseIconVisible(true);
         chip.setCheckable(false);
         // Style cho giống XML của bạn
-        chip.setChipBackgroundColorResource(R.color.pink_light); // Nhớ khai báo màu trong colors.xml
+        chip.setChipBackgroundColorResource(R.color.pink_light);
 
         // Sự kiện xóa chip
         chip.setOnCloseIconClickListener(v -> {

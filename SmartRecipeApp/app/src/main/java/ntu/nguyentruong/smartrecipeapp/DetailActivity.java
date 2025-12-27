@@ -91,7 +91,7 @@ public class DetailActivity extends AppCompatActivity {
             tvDetailDifficulty.setText("⭐ " + doKho);
             tvDetailDifficulty.setVisibility(View.VISIBLE);
 
-            // (Tùy chọn) Đổi màu chữ theo độ khó cho đẹp
+            // Đổi màu chữ theo độ khó
             if (doKho.equals("Khó")) {
                 tvDetailDifficulty.setTextColor(android.graphics.Color.RED);
             } else if (doKho.equals("Trung bình")) {
@@ -100,7 +100,7 @@ public class DetailActivity extends AppCompatActivity {
                 tvDetailDifficulty.setTextColor(android.graphics.Color.parseColor("#4CAF50")); // Màu Xanh lá
             }
         } else {
-            // Nếu dữ liệu cũ không có độ khó thì ẩn đi
+
             tvDetailDifficulty.setVisibility(View.GONE);
         }
         updateLikeCountUI(monAnHienTai.getLikeCount());
@@ -108,12 +108,12 @@ public class DetailActivity extends AppCompatActivity {
         // 2. Load ảnh từ URL bằng Glide
         Glide.with(this)
                 .load(monAnHienTai.getHinhAnh())
-                .placeholder(R.drawable.bg_rounded_pink) // Hình hiển thị khi đang load
-                .error(R.drawable.bg_rounded_launch)       // Hình hiển thị khi lỗi
+                .placeholder(R.drawable.bg_rounded_pink)
+                .error(R.drawable.bg_rounded_launch)
                 .into(imgDetailFood);
 
-        // 3. Xử lý danh sách Nguyên liệu (Dynamic CheckBox)
-        layoutIngredientsList.removeAllViews(); // Xóa view mẫu trong XML
+        // 3. Xử lý danh sách Nguyên liệu
+        layoutIngredientsList.removeAllViews();
         List<String> nguyenLieus = monAnHienTai.getNguyenLieu();
 
         if (nguyenLieus != null) {
@@ -121,19 +121,17 @@ public class DetailActivity extends AppCompatActivity {
                 CheckBox checkBox = new CheckBox(this);
                 checkBox.setText(item);
                 checkBox.setTextColor(getResources().getColor(android.R.color.black));
-                // Tùy chỉnh thêm style cho đẹp nếu cần
                 layoutIngredientsList.addView(checkBox);
             }
         }
 
-        // 4. Xử lý danh sách Cách làm (Dynamic Layout Inflater)
+        // 4. Xử lý danh sách Cách làm
         layoutStepsList.removeAllViews();
         List<String> cachLams = monAnHienTai.getCachLam();
         LayoutInflater inflater = LayoutInflater.from(this);
 
         if (cachLams != null) {
             for (int i = 0; i < cachLams.size(); i++) {
-                // Inflate layout con
                 View stepView = inflater.inflate(R.layout.item_step_food, layoutStepsList, false);
 
                 TextView tvNum = stepView.findViewById(R.id.tvStepNumber);
@@ -155,22 +153,20 @@ public class DetailActivity extends AppCompatActivity {
         btnSaveFavorite.setOnClickListener(v -> {
             // Đảo trạng thái like
             isLiked = !isLiked;
-
-            // Xử lý số lượng hiển thị NGAY LẬP TỨC (để user thấy app mượt)
+            // Xử lý số lượng hiển thị NGAY LẬP TỨC
             int currentCount = monAnHienTai.getLikeCount();
             if (isLiked) {
                 currentCount++;
             } else {
                 currentCount--;
             }
-            // Lưu lại số mới vào biến tạm để hiển thị và update lần sau
             monAnHienTai.setLikeCount(currentCount);
 
             // Cập nhật giao diện
             updateUIButton(isLiked);
-            updateLikeCountUI(currentCount); // <--- Cập nhật số trên màn hình
+            updateLikeCountUI(currentCount);
 
-            // Gửi dữ liệu lên Firestore (Code cũ của bạn giữ nguyên)
+            // Gửi dữ liệu lên Firestore
             updateFavoriteToFirestore(isLiked);
         });
     }
@@ -197,8 +193,7 @@ public class DetailActivity extends AppCompatActivity {
         // 1. Tham chiếu đến món ăn trong collection "recipes"
         DocumentReference recipeRef = db.collection("recipes").document(docId);
 
-        // 2. Tham chiếu đến bảng "favorites" (để Profile có cái mà đếm)
-        // Tạo ID duy nhất: uid_recipeId
+        // 2. Tham chiếu đến bảng "favorites"
         String favoriteDocId = myUid + "_" + docId;
         DocumentReference favRef = db.collection("favorites").document(favoriteDocId);
 
@@ -217,7 +212,6 @@ public class DetailActivity extends AppCompatActivity {
 
             favRef.set(favData)
                     .addOnFailureListener(e -> {
-                        // Xử lý lỗi nếu cần
                         Log.e("FAV_ERROR", "Không lưu được vào favorites: " + e.getMessage());
                     });
 

@@ -60,10 +60,10 @@ public class AddFoodsActivity2 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_foods2);
+        db = FirebaseFirestore.getInstance();
 
         initViews();
-        initSpinner(); // Khởi tạo Spinner độ khó
-        initFirebase();
+        initSpinner();
         initCloudinary();
         setupImagePicker();
         handleEvents();
@@ -72,7 +72,7 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         if (getIntent().getBooleanExtra("IS_EDIT", false)) {
             isEditMode = true;
             editingRecipeId = getIntent().getStringExtra("RECIPE_ID");
-            btnPublish.setText("Cập nhật món ăn");
+            btnPublish.setText("Cập nhật và gửi phê duyệt");
             loadRecipeToEdit(editingRecipeId);
         } else {
             // Mặc định thêm 1 dòng trống
@@ -89,7 +89,7 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         edtRecipeName = findViewById(R.id.edtRecipeName);
         edtTime = findViewById(R.id.edtTime);
         edtServes = findViewById(R.id.edtServes);
-        spinnerDifficulty = findViewById(R.id.spinnerDifficulty); // Ánh xạ Spinner
+        spinnerDifficulty = findViewById(R.id.spinnerDifficulty);
 
         layoutIngredientsContainer = findViewById(R.id.layoutIngredientsContainer);
         layoutStepsContainer = findViewById(R.id.layoutStepsContainer);
@@ -106,7 +106,6 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         progressDialog.setCancelable(false);
     }
 
-    // Cài đặt dữ liệu cho Spinner
     private void initSpinner() {
         String[] difficulties = {"Dễ", "Trung bình", "Khó"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, difficulties);
@@ -114,9 +113,6 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         spinnerDifficulty.setAdapter(adapter);
     }
 
-    private void initFirebase() {
-        db = FirebaseFirestore.getInstance();
-    }
 
     private void initCloudinary() {
         try {
@@ -154,7 +150,7 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         btnPublish.setOnClickListener(v -> validateAndSubmit());
     }
 
-    // --- XỬ LÝ NGUYÊN LIỆU (Chỉ còn nhập Tên) ---
+    // --- NGUYÊN LIỆU ---
     private void addIngredientRow(String nameVal) {
         View view = LayoutInflater.from(this).inflate(R.layout.item_add_ingredient, layoutIngredientsContainer, false);
 
@@ -165,20 +161,20 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         layoutIngredientsContainer.addView(view);
     }
 
-    // --- XỬ LÝ BƯỚC LÀM (Có đánh số lại) ---
+    // --- BƯỚC LÀM ---
     private void addStepRow(String stepContent) {
         View view = LayoutInflater.from(this).inflate(R.layout.item_add_step, layoutStepsContainer, false);
 
         EditText edtContent = view.findViewById(R.id.edtStepContent);
         TextView tvIndex = view.findViewById(R.id.tvStepIndex);
-        ImageButton btnRemove = view.findViewById(R.id.btnStepRemove); // Ánh xạ nút xóa
+        ImageButton btnRemove = view.findViewById(R.id.btnStepRemove);
 
-        // Điền nội dung cũ (nếu có - dùng cho chức năng Sửa)
+        // Điền nội dung cũ
         edtContent.setText(stepContent);
 
         // Xử lý sự kiện khi bấm nút Xóa
         btnRemove.setOnClickListener(v -> {
-            layoutStepsContainer.removeView(view); // Xóa dòng này khỏi giao diện
+            layoutStepsContainer.removeView(view);
         });
 
         layoutStepsContainer.addView(view);
@@ -267,13 +263,22 @@ public class AddFoodsActivity2 extends AppCompatActivity {
 
     private void saveToFirestore(String name, String time, String serves, List<String> ingredients, List<String> steps, String imageUrl) {
         String currentUserId = FirebaseAuth.getInstance().getUid();
+        db.collection("users").document(currentUserId).get()
+                .addOnSuccessListener(userDoc -> {
+                    String finalAuthorName = "Ẩn danh";
+                    String fullName = userDoc.getString("fullName");
+                    if (fullName != null && !fullName.isEmpty()) {
+                        finalAuthorName = fullName;
+
+                    }
         String difficulty = spinnerDifficulty.getSelectedItem().toString(); // Lấy độ khó
 
         Map<String, Object> data = new HashMap<>();
         if (isEditMode) {
-            // Nếu Edit thì không tạo mới các trường tĩnh
+
         } else {
             data.put("authorId", currentUserId);
+            data.put("authorName", finalAuthorName);
             data.put("createdAt", System.currentTimeMillis());
             data.put("likeCount", 0);
             data.put("likedBy", new ArrayList<String>());
@@ -283,16 +288,16 @@ public class AddFoodsActivity2 extends AppCompatActivity {
         data.put("tenMon", name);
         data.put("thoiGian", time);
         data.put("khauPhan", serves);
-        data.put("doKho", difficulty); // Thêm trường Độ khó
+        data.put("doKho", difficulty);
         data.put("hinhAnh", imageUrl);
         data.put("nguyenLieu", ingredients);
         data.put("cachLam", steps);
-        data.put("status", "pending"); // Luôn cần duyệt lại
+        data.put("status", "pending");
         data.put("searchKeywords", generateKeywords(name));
 
         if (isEditMode) {
             db.collection("recipes").document(editingRecipeId).update(data)
-                    .addOnSuccessListener(v -> finishPost("Cập nhật thành công!"))
+                    .addOnSuccessListener(v -> finishPost("Cập nhật và gửi duyệt thành công."))
                     .addOnFailureListener(e -> finishPost("Lỗi: " + e.getMessage()));
         } else {
             db.collection("recipes").add(data)
@@ -303,6 +308,7 @@ public class AddFoodsActivity2 extends AppCompatActivity {
                     })
                     .addOnFailureListener(e -> finishPost("Lỗi: " + e.getMessage()));
         }
+                });
     }
 
     private void finishPost(String msg) {
@@ -321,8 +327,6 @@ public class AddFoodsActivity2 extends AppCompatActivity {
                         edtRecipeName.setText(mon.getTenMon());
                         edtTime.setText(mon.getThoiGian());
                         edtServes.setText(mon.getKhauPhan());
-
-                        // Set Spinner Độ khó
                         setSpinnerValue(mon.getDoKho());
 
                         oldImageUrl = mon.getHinhAnh();
@@ -330,7 +334,7 @@ public class AddFoodsActivity2 extends AppCompatActivity {
                         imgRealPhoto.setVisibility(View.VISIBLE);
                         findViewById(R.id.imgRecipePreview).setVisibility(View.GONE);
 
-                        // Load Nguyên liệu (Đơn giản vì giờ chỉ là List String)
+                        // Load Nguyên liệu
                         if (mon.getNguyenLieu() != null) {
                             for (String item : mon.getNguyenLieu()) {
                                 addIngredientRow(item);

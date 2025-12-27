@@ -37,8 +37,7 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ItemReci
         MonAn mon = list.get(position);
 
         holder.tvName.setText(mon.getTenMon());
-        // Có thể hiển thị thêm thời gian nếu Model có trường đó
-        holder.tvInfo.setText(mon.getThoiGian() + " | " + mon.getKhauPhan());
+        holder.tvInfo.setText(mon.getAuthorName());
 
         Glide.with(context)
                 .load(mon.getHinhAnh())
@@ -48,7 +47,7 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ItemReci
         // Click vào item -> Mở trang duyệt
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, DetailRecipesActivity.class);
-            intent.putExtra("RECIPE_ID", mon.getId()); // Truyền ID sang
+            intent.putExtra("RECIPE_ID", mon.getId()); // Truyền ID
             context.startActivity(intent);
         });
     }
@@ -67,6 +66,7 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ItemReci
             imgThumb = itemView.findViewById(R.id.imgFoodThumb);
             tvName = itemView.findViewById(R.id.tvFoodName);
             tvInfo = itemView.findViewById(R.id.tvAuthorTime);
+
         }
     }
 }
